@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "adcreatorstudio",
+  "description": "AdCreator Studio agent skills — Video Ads and more for Claude Code, Cursor, Gemini CLI, Codex, Kiro, Antigravity.",
+  "owner": {
+    "name": "AdCreator Studio",
+    "url": "https://adcreatorstudio.com"
+  },
+  "plugins": [
+    {
+      "name": "adcreator",
+      "description": "Create complete Video Ads (script, TTS, B-Roll, overlays, transitions) for TikTok, Reels & Shorts. Trigger: 'use adcreator to make a video ad about...'",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

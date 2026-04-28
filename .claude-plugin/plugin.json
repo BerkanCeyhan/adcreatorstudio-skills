@@ -5,9 +5,5 @@
   "author": {
     "name": "AdCreator Studio",
     "url": "https://adcreatorstudio.com"
-  },
-  "homepage": "https://github.com/BerkanCeyhan/adcreatorstudio-skills",
-  "repository": "https://github.com/BerkanCeyhan/adcreatorstudio-skills",
-  "license": "MIT",
-  "keywords": ["video-ads", "adcreator", "direct-response", "tiktok", "reels", "shorts", "mcp"]
+  }
 }
