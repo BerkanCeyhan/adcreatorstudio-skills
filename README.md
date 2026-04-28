@@ -18,6 +18,14 @@ Agent skills for [AdCreator Studio](https://adcreatorstudio.com). Adds AI-native
 
 ### Claude Code
 
+Via the plugin marketplace:
+
+```
+/plugin marketplace add BerkanCeyhan/adcreatorstudio-skills
+```
+
+Or from the CLI:
+
 ```bash
 claude plugin install BerkanCeyhan/adcreatorstudio-skills
 ```
