@@ -1,0 +1,30 @@
+name: Sync skill files to harness directories
+
+on:
+  push:
+    paths:
+      - 'skills/**'
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync video-ads skill to all harness directories
+        run: |
+          cp skills/video-ads/SKILL.md .cursor/skills/video-ads/SKILL.md
+          cp -r skills/video-ads/references/. .cursor/skills/video-ads/references/
+          cp skills/video-ads/SKILL.md .agents/skills/video-ads/SKILL.md
+          cp -r skills/video-ads/references/. .agents/skills/video-ads/references/
+          cp skills/video-ads/SKILL.md .kiro/skills/video-ads/SKILL.md
+          cp -r skills/video-ads/references/. .kiro/skills/video-ads/references/
+
+      - name: Commit synced files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .cursor/ .agents/ .kiro/
+          git diff --staged --quiet || git commit -m "chore: sync skill files to harness directories [skip ci]"
+          git push

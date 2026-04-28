@@ -1,0 +1,6 @@
+{
+  "sessionStart": {
+    "description": "Load adcreator video-ads skill",
+    "skillPaths": ["skills/video-ads"]
+  }
+}

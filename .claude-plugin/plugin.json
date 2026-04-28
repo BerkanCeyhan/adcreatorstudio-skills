@@ -1,0 +1,13 @@
+{
+  "name": "adcreator",
+  "description": "AdCreator Studio — Video Ads skill. Creates complete short-form video ads (TikTok, Reels, Shorts) with script, voice, B-Roll, overlays, and transitions via MCP.",
+  "version": "1.0.0",
+  "author": {
+    "name": "AdCreator Studio",
+    "url": "https://adcreatorstudio.com"
+  },
+  "homepage": "https://github.com/BerkanCeyhan/adcreatorstudio-skills",
+  "repository": "https://github.com/BerkanCeyhan/adcreatorstudio-skills",
+  "license": "MIT",
+  "keywords": ["video-ads", "adcreator", "direct-response", "tiktok", "reels", "shorts", "mcp"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "adcreatorstudio-skills",
+  "version": "1.0.0",
+  "description": "AdCreator Studio agent skills — Video Ads and more. Works with Claude Code, Cursor, Gemini CLI, Codex, Kiro, Antigravity, VS Code Copilot.",
+  "skills": ["skills/video-ads"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BerkanCeyhan/adcreatorstudio-skills"
+  },
+  "keywords": ["adcreator", "video-ads", "claude-code", "agent-skills", "mcp"],
+  "license": "MIT"
+}
