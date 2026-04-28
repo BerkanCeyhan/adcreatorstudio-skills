@@ -2,7 +2,7 @@
 
 Agent skills for [AdCreator Studio](https://adcreatorstudio.com). Adds AI-native workflows to your coding agent.
 
-> **Requires an AdCreator Studio account** with MCP connected. [Set up here →](https://adcreatorstudio.com/settings/api-access)
+> **Requires an AdCreator Studio account** with MCP connected. [Set up here →](https://ai.adcreatorstudio.com/settings/api-access)
 
 ---
 
@@ -16,15 +16,7 @@ Agent skills for [AdCreator Studio](https://adcreatorstudio.com). Adds AI-native
 
 ## Install
 
-### Claude Code (recommended)
-
-If you have [Superpowers](https://github.com/anthropics/claude-plugins-official) installed:
-
-```
-/plugin marketplace add BerkanCeyhan/adcreatorstudio-skills
-```
-
-Or install directly from the registry:
+### Claude Code
 
 ```bash
 claude plugin install BerkanCeyhan/adcreatorstudio-skills
@@ -57,23 +49,42 @@ The skill needs your AdCreator Studio API key connected as an MCP server.
 **Claude Code:**
 ```bash
 claude mcp add --transport http adcreator \
-  https://adcreatorstudio.com/api/mcp \
+  https://ai.adcreatorstudio.com/api/mcp \
   --header "Authorization: Bearer YOUR_API_KEY"
 ```
 
-**Cursor / VS Code (`mcp.json`):**
+**Cursor / VS Code (`.cursor/mcp.json` or `.vscode/mcp.json`):**
 ```json
 {
   "mcpServers": {
     "adcreator": {
-      "url": "https://adcreatorstudio.com/api/mcp",
+      "url": "https://ai.adcreatorstudio.com/api/mcp",
       "headers": { "Authorization": "Bearer YOUR_API_KEY" }
     }
   }
 }
 ```
 
-Get your API key: [adcreatorstudio.com/settings/api-access](https://adcreatorstudio.com/settings/api-access)
+**Gemini CLI (`~/.gemini/settings.json`):**
+```json
+{
+  "mcpServers": {
+    "adcreator": {
+      "httpUrl": "https://ai.adcreatorstudio.com/api/mcp",
+      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+**Codex CLI:**
+```bash
+codex mcp add adcreator \
+  https://ai.adcreatorstudio.com/api/mcp \
+  --header "Authorization: Bearer YOUR_API_KEY"
+```
+
+Get your API key: [ai.adcreatorstudio.com/settings/api-access](https://ai.adcreatorstudio.com/settings/api-access)
 
 ---
 
@@ -101,7 +112,7 @@ The agent will walk through:
 
 | Harness | Install method | Auto-load |
 |---|---|---|
-| Claude Code | `/plugin marketplace add` or `npx skills add` | SessionStart hook |
+| Claude Code | `claude plugin install` or `npx skills add` | On trigger |
 | Cursor | `npx skills add` → `.cursor/skills/` | On trigger |
 | Gemini CLI | `npx skills add` → extension | `gemini-extension.json` |
 | Codex CLI | `npx skills add` → `.codex/` | SessionStart |
