@@ -63,20 +63,39 @@ If `brand_colors` were provided, use those as the primary + accent. Derive a mat
 
 **Language:** Match the target market, not the AI default. German product = German script. Colloquial German, not formal. If the brand name, domain, or Instagram handle is German, write in German. See the "UGC / Social Media Style" section in copywriting.md.
 
-**VO text rules (TTS will be called on this text exactly):**
-- No em-dashes (—) — replace with comma or restructure
-- No period-stacked fragments — connect sentences with conjunctions
-- Spell out numbers: "70%" → "siebzig Prozent" (DE) or "seventy percent" (EN)
-- Spell out currency: "25€" → "fünfundzwanzig Euro"
-- Read each beat aloud — if it sounds choppy spoken, rewrite it before proceeding
-
-**After writing the script, optimize each beat for TTS per [references/voice.md](references/voice.md):**
-Add Eleven v3 audio tags (1–2 per beat max) and apply text normalization rules. The final `vo_text` passed to `dr_video_create` must already be TTS-optimized.
-
 **Ad goal awareness — determine BEFORE scripting:**
 - **Product page CTA** (driving to a landing page/shop): No social follow blocks. CTA is "link below / tap here / swipe up." Urgency comes from offer + scarcity.
 - **Social follow CTA** (driving followers): Use `hf/instagram-follow` or `hf/tiktok-follow`. CTA is "follow for more." These are rare — most DR ads drive to product pages.
 - **When unsure:** Ask the user. A 25% discount CTA with a landing page URL is always a product-page CTA.
+
+### Script Process — Full Monologue First
+
+**DO NOT write beat-by-beat.** Write a single continuous monologue, then assign beats after.
+
+**Phase 1 — Write the full monologue:**
+Write the entire script as one person telling one story. No beat labels, no transitions announced. Natural spoken language. Paragraphs mark where the emotional focus shifts.
+
+- Write as if the speaker is telling a friend — not reading a list
+- Each paragraph flows from the previous one without announcing the topic change
+- The CTA should feel like a natural conclusion, not a sales pitch
+
+**Phase 2 — Read it aloud (mandatory):**
+Read the full monologue aloud. If any sentence sounds choppy, disconnected, or announcement-style, rewrite it before proceeding. Fix issues now — TTS will make them worse.
+
+**Phase 3 — TTS normalization (mandatory):**
+Before assigning beats, clean the text:
+- No em-dashes (—) — replace with comma or restructure
+- No period-stacked fragments — connect with conjunctions
+- Spell out numbers: "70%" → "siebzig Prozent" (DE) / "seventy percent" (EN)
+- Spell out currency: "25€" → "fünfundzwanzig Euro"
+
+**Phase 4 — Assign paragraphs to beat types:**
+Label each paragraph with its beat type. Do NOT rewrite sentences during this step — just assign. The monologue must remain identical after assignment.
+
+**Phase 5 — Add audio tags:**
+Add 1–2 ElevenLabs v3 audio tags per beat. See [references/voice.md](references/voice.md) for which tags fit which beats. Place tag at the start of the beat's vo_text. Do not change the spoken text.
+
+**Show the user the full monologue BEFORE calling any tool.** Get confirmation or iterate. Only call `dr_voice_list` + `dr_video_create` after the script is approved.
 
 ### Templates
 
@@ -84,53 +103,85 @@ Add Eleven v3 audio tags (1–2 per beat max) and apply text normalization rules
 |---|---|---|
 | `classic_dr` | 45s / 7 beats | hook → problem → agitate → why_others_fail → mechanism → proof → cta |
 | `problem_solution` | 30s / 6 beats | hook → problem → value_prop → proof → objection → cta |
-| `ugc_style` | 25s / 5 beats | hook → proof → mechanism → objection → cta |
+| `ugc_style` | 25s / 5 beats | hook → problem → mechanism → proof → cta |
 | `short_hook` | 15s / 3 beats | hook → mechanism → cta |
 
-### Example — 30s skincare (English)
+### Full example — German fitness supplement (UGC style, 30s)
+
+**Phase 1 — Full monologue:**
+
+> Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen.
+>
+> Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht.
+>
+> Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln.
+>
+> Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse.
+>
+> Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten.
+
+**Phase 4 — Beat assignment:**
 
 ```json
 [
-  { "beat_type": "hook",       "vo_text": "Your skincare routine is making it worse." },
-  { "beat_type": "problem",    "vo_text": "If you're washing your face twice a day and still breaking out, it's not your fault." },
-  { "beat_type": "value_prop", "vo_text": "Balanced Barrier Serum resets your skin's pH in 7 days — no harsh chemicals." },
-  { "beat_type": "proof",      "vo_text": "8,400 five-star reviews. Dermatologist-tested. And it shows." },
-  { "beat_type": "objection",  "vo_text": "No fragrance. No parabens. 60-day money-back guarantee." },
-  { "beat_type": "cta",        "vo_text": "Tap below. 20% off your first order — today only." }
+  { "beat_type": "hook",      "vo_text": "Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen." },
+  { "beat_type": "problem",   "vo_text": "Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht." },
+  { "beat_type": "mechanism", "vo_text": "Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln." },
+  { "beat_type": "proof",     "vo_text": "Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse." },
+  { "beat_type": "cta",       "vo_text": "Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten." }
 ]
 ```
 
-### Example — 25s German fitness supplement (UGC style)
+**Phase 5 — Audio tags added (final vo_text):**
 
 ```json
 [
-  { "beat_type": "hook",       "vo_text": "Ich hab monatelang trainiert und bin kein Stück weitergekommen." },
-  { "beat_type": "problem",    "vo_text": "Jedes Training alles gegeben, Protein getrackt, genug geschlafen. Trotzdem stagniert." },
-  { "beat_type": "mechanism",  "vo_text": "Bis mir jemand erklärt hat: du lädst einfach falsch nach. Kreatin HCL lädt direkt in die Zelle — keine Einlagerungen." },
-  { "beat_type": "proof",      "vo_text": "Ich hab's einen Monat probiert. Nach zwei Wochen hat sich was verändert. Das ist kein Placebo." },
-  { "beat_type": "cta",        "vo_text": "Link im Bio. 25% auf das 3er-Pack — verkauft sich schnell." }
+  { "beat_type": "hook",      "vo_text": "[direct] Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen." },
+  { "beat_type": "problem",   "vo_text": "[empathetic] Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht." },
+  { "beat_type": "mechanism", "vo_text": "[confident] Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln." },
+  { "beat_type": "proof",     "vo_text": "[warm] Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse." },
+  { "beat_type": "cta",       "vo_text": "[excited] Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten." }
 ]
 ```
 
 ---
 
-## Step 2 — Create Video
+## Step 2 — Select Voice + Create Video
 
-Call `dr_voice_list` first to select the voice. Then:
+Call `dr_voice_list`. Filter by target language first. Then apply priority order from [references/voice.md](references/voice.md): cloned > professional > premade.
+
+**Present max 3 options to the user** with name, category, and preview link. Format:
+
+```
+Voice options for this ad:
+
+1. **[Name]** (cloned) — your own voice, most authentic for UGC
+   Preview: [preview_url]
+
+2. **[Name]** (professional, female, conversational) — warm lifestyle tone
+   Preview: [preview_url]
+
+3. **[Name]** (professional, male, energetic) — fitness/supplement energy
+   Preview: [preview_url]
+
+Which would you like? (reply with 1/2/3 or voice name)
+```
+
+Wait for user confirmation before calling `dr_video_create`.
+
+Then:
 
 ```typescript
 dr_video_create({
   title: "Product Name — Hook Variant 1",
-  template: "problem_solution",
-  beats: [ /* full script from Step 1 */ ],
-  voice_id: "...",       // from dr_voice_list
+  template: "ugc_style",
+  beats: [ /* approved script from Step 1 with audio tags */ ],
+  voice_id: "...",       // confirmed by user
   caption_style: "pop"   // pop (default) | classic | highlight
 })
 ```
 
 Returns: `videoId`, `editorUrl`, `beats[]` with IDs → store all for next steps.
-
-See [references/voice.md](references/voice.md) for voice selection logic and ElevenLabs model settings.
 
 ---
 
@@ -169,16 +220,26 @@ Call `dr_blocks_list` to see all available blocks. Add with `dr_overlay_add`.
 
 See [references/blocks.md](references/blocks.md) for full block selection guide and props reference.
 
-### Quick reference — always use these
+### Purpose-first thinking
 
-| Beat | Block ID | When to use |
-|---|---|---|
-| hook | `dr/hook-bigtext-pop` | Always — pattern interrupt |
-| mechanism/value_prop | `dr/solution-product-reveal` | Always — benefit bullets |
-| cta | `dr/cta-button-pulse` | **ALWAYS on CTA beat** |
-| hook + cta | `dr/fx-grain-overlay` | Always — premium texture |
-| proof (social) | `hf/instagram-follow` or `hf/tiktok-follow` | **Only** if: (1) ad goal is social follow OR (2) brand has 10K+ followers AND it reinforces trust |
-| proof (review) | `dr/social-proof-reviews` | When you have a real verbatim testimonial quote |
+Each overlay must answer: **"What does this block DO for this specific moment?"** If you can't answer clearly, don't add it.
+
+| Moment | Purpose | Block | Condition |
+|---|---|---|---|
+| Hook opens | Pattern interrupt — force attention | `dr/hook-bigtext-pop` | Always |
+| Mechanism/value_prop | Amplify the solution — make benefit visual | `dr/solution-product-reveal` | When product has clear bullet benefits |
+| CTA | Drive the action — make clicking feel urgent | `dr/cta-button-pulse` | Always on CTA beat |
+| Hook or CTA | Premium cinematic feel | `dr/fx-grain-overlay` | When the ad has a premium/lifestyle tone |
+| Proof (social follow) | Show community size as trust signal | `hf/instagram-follow` or `hf/tiktok-follow` | **Only** if goal = social follow OR 10K+ followers |
+| Proof (testimonial) | Show specific social proof | `dr/social-proof-reviews` | Only with a real verbatim quote |
+
+**Overlay planning process:**
+1. List each beat
+2. For each beat, ask: "Is there a specific visual amplification this beat needs?"
+3. If yes: which block serves that purpose?
+4. If no: add nothing — a clean B-Roll beat is better than a cluttered overlay beat
+
+Max 3 overlays per beat. But most beats should have 0–1.
 
 ```typescript
 dr_overlay_add({
@@ -207,20 +268,30 @@ dr_transition_add({
 })
 ```
 
-**Transition limits by video length:**
-- ≤15s (3 beats): max 1 transition
-- ≤25s (5 beats): max 2 transitions
-- ≤45s (7 beats): max 3 transitions
+### Emotional Arc Thinking (not mechanical placement)
 
-Don't over-transition. Before choosing, read [references/blocks.md](references/blocks.md) — it has the visual/emotional description of each transition so you can choose what fits the ad's energy.
+Transitions serve emotional pivots — moments where the viewer's mental state shifts. Ask: **"What changes in the viewer's feeling at this boundary?"**
 
-| Boundary | Block | What it does |
+Every ad has 2–3 real pivots. Find them first, then choose a transition that matches the energy of THAT shift:
+
+| Emotional shift | Pivot type | Right transition |
 |---|---|---|
-| hook → problem | `hf/flash-through-white` | Luminance burst to white — viewer blinks. Shock. Aggression. |
-| problem → agitate | `hf/whip-pan` | Motion blur horizontal sweep. Kinetic escalation. |
-| agitate → mechanism | `hf/cinematic-zoom` (**max 1x**) | Scale collapse + blur. Revelation. The climax moment. |
-| mechanism → proof | `hf/crossfade` | Opacity dissolve, no motion. Continuity. Trust. |
-| proof → cta | `hf/blur-through` | Full abstraction then resolve. Soft drift. The exhale before the ask. |
+| Interrupt → Recognition (hook→problem) | **The hook lands** — viewer says "wait, that's me" | `hf/flash-through-white` — shock, aggression |
+| Problem → Escalation (problem→agitate) | **The pain deepens** — frustration stacks | `hf/whip-pan` — kinetic, building urgency |
+| Stuck → Revelation (agitate/problem→mechanism) | **The turn** — from darkness to answer | `hf/cinematic-zoom` — climax, use max once |
+| Explanation → Trust (mechanism→proof) | **Belief builds** — facts settle in | `hf/crossfade` — continuity, no drama |
+| Trust → Action (proof→cta) | **The exhale** — soft transition into the ask | `hf/blur-through` — resolve, invitation |
+
+**Decision process:**
+1. Map the ad's emotional arc beat by beat (1–2 sentences per beat: "viewer feels...")
+2. Find where the feeling shifts hardest (usually 2–3 moments)
+3. Place one transition per real pivot — not at every beat boundary
+4. If a boundary has no emotional shift (two beats of the same emotional state), no transition
+
+**Limits are consequences, not rules:**
+- Short ads (≤25s) typically have 1–2 real pivots max
+- `hf/cinematic-zoom` can only be the climax moment — if your ad has no agitate beat or no single revelation moment, skip it
+- Never stack two high-energy transitions adjacent to each other (flash + whip-pan in sequence = chaotic, not powerful)
 
 ---
 
