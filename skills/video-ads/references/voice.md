@@ -16,6 +16,16 @@ Call `dr_voice_list` to get available voices with their labels. Pick based on pr
 
 No audio preview in coding agent — describe the voice from its labels when reporting to user.
 
+### Voice selection priority order
+
+1. **User's own cloned voice** (`category: "cloned"`) in the target language — always present this first. Most authentic for UGC. The user's own voice = highest trust signal.
+2. **Professional voices** (`category: "professional"`) in the target language — curated voices built for the platform.
+3. **Premade voices** (`category: "premade"`) in the target language — fallback only.
+
+When user has a cloned voice in the right language, say: *"I see you have a cloned voice ([name]) — this will sound the most authentic for UGC. I'll use it unless you prefer a different voice."*
+
+If multiple candidates exist, present max 3 options with their DR guidance label. Don't list the full 20+ voice list.
+
 ---
 
 ## ElevenLabs Model Settings
@@ -56,16 +66,68 @@ These are global speed settings. If the video has a consistent pace, use 1.0 as 
 
 Higher stability = more consistent, less expressive. Lower = more dynamic, more varied.
 
+### TTS Text Optimization (MANDATORY before dr_video_create)
+
+The VO text you write in the script is NOT what gets sent to ElevenLabs verbatim. You must optimize it first. Do this before calling `dr_video_create`.
+
+**Rules — apply to every beat:**
+
+1. **Spell out numbers** — TTS reads digits inconsistently. "70%" → "siebzig Prozent" (DE) / "seventy percent" (EN). "25€" → "fünfundzwanzig Euro". "3 Wochen" → "drei Wochen".
+2. **Remove em-dashes** — "X — Y" causes TTS to restart delivery. Replace with comma: "X, Y". Or restructure: "X und Y".
+3. **No period-stacked fragments** — "X. Y. Z." = three hard stops. Connect: "X, Y und Z." or "X — aber Y" → "X, aber Y".
+4. **Use ellipsis for deliberate pauses** — `...` works in v3. "Ich hab alles probiert... nichts hat geholfen." Max 1-2 per beat.
+5. **No SSML break tags** — v3 doesn't support `<break time="1.5s"/>`. Use `...` instead.
+6. **Expand abbreviations that TTS will stumble on** — "HCL" → "H-C-L". "mg" → "Milligramm". Product names: spell phonetically if unusual.
+7. **Write as continuous speech** — Read every beat out loud. If it sounds like reading a list, rewrite it.
+
 ### Audio Tags (eleven_v3 only)
 
-The `eleven_v3` model supports inline audio tags for fine-grained pacing. These are automatically added by the TTS route based on beat type. Set `voice_audio_tag_mode` to control:
-- `"auto"` — tags added automatically per beat type (default)
-- `"off"` — no tags, plain text
-- `"custom"` — tags from `voice_custom_audio_tags`
+v3 supports `[tag]` inline audio cues that change delivery. Use them surgically — 1–2 per beat MAX. Overuse makes the voice erratic.
 
-Example auto-tag enhancement for a hook beat:
+**DO NOT** use audio tags on every sentence. They must be contextually earned.
+
+#### Tags by beat type
+
+| Beat | Appropriate tags | Avoid |
+|---|---|---|
+| hook | `[curious]`, `[excited]`, `[direct]` | `[whispering]`, `[laughing]` |
+| problem | `[empathetic]`, `[sighs]`, `[thoughtful]` | `[excited]`, `[laughing]` |
+| agitate | `[frustrated]`, `[annoyed]` | `[happy]`, `[whispering]` |
+| mechanism | `[confident]`, `[curious]` | `[excited]`, `[sighs]` |
+| proof | `[warm]`, `[genuine]` | `[sarcastic]`, `[annoyed]` |
+| objection | `[reassuring]`, `[direct]` | — |
+| cta | `[excited]`, `[direct]` | `[whispering]`, `[sighs]` |
+
+#### Placement rules
+
+- Place the tag immediately before the segment it modifies
+- A tag modifies everything after it until the next tag or end of text
+- Don't open with a tag on every beat — sometimes let the voice handle it naturally
+
+#### German-language note
+
+Audio tags work in German v3 voices. Use English tags even for German VO — the tag controls delivery, not language. `[excited] Ich hab's nicht geglaubt...` works.
+
+#### Examples
+
+**Hook (German fitness):**
 ```
-[fast] Your skincare routine is making it worse. [pause: 0.3s]
+[curious] Du nimmst Kreatin und trotzdem stagnierst du... weißt du warum?
+```
+
+**Problem:**
+```
+Ich hab alles probiert, mehr Schlaf, mehr Protein, Deload-Wochen. [sighs] Immer das gleiche.
+```
+
+**Mechanism:**
+```
+[confident] Kreatin HCL wird siebzig Prozent schneller aufgenommen und geht direkt in die Zelle. Keine Ladephase, keine Wassereinlagerungen.
+```
+
+**CTA:**
+```
+[excited] Link unten. Fünfundzwanzig Prozent auf das Dreier-Pack... und die sind schnell weg.
 ```
 
 ---

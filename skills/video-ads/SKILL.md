@@ -63,6 +63,16 @@ If `brand_colors` were provided, use those as the primary + accent. Derive a mat
 
 **Language:** Match the target market, not the AI default. German product = German script. Colloquial German, not formal. If the brand name, domain, or Instagram handle is German, write in German. See the "UGC / Social Media Style" section in copywriting.md.
 
+**VO text rules (TTS will be called on this text exactly):**
+- No em-dashes (—) — replace with comma or restructure
+- No period-stacked fragments — connect sentences with conjunctions
+- Spell out numbers: "70%" → "siebzig Prozent" (DE) or "seventy percent" (EN)
+- Spell out currency: "25€" → "fünfundzwanzig Euro"
+- Read each beat aloud — if it sounds choppy spoken, rewrite it before proceeding
+
+**After writing the script, optimize each beat for TTS per [references/voice.md](references/voice.md):**
+Add Eleven v3 audio tags (1–2 per beat max) and apply text normalization rules. The final `vo_text` passed to `dr_video_create` must already be TTS-optimized.
+
 **Ad goal awareness — determine BEFORE scripting:**
 - **Product page CTA** (driving to a landing page/shop): No social follow blocks. CTA is "link below / tap here / swipe up." Urgency comes from offer + scarcity.
 - **Social follow CTA** (driving followers): Use `hf/instagram-follow` or `hf/tiktok-follow`. CTA is "follow for more." These are rare — most DR ads drive to product pages.
@@ -145,7 +155,11 @@ Call `dr_broll_suggest` per beat for media options. See [references/broll.md](re
 dr_broll_suggest({ beat_type: "problem", vo_text: "still breaking out every morning..." })
 ```
 
-Returns results ranked: library (own B-Roll) → unsplash → pexels. Report URLs to user — they assign in editor.
+**Priority order:**
+1. User's own uploaded assets (`category: "library"`) — always first. If the user provided B-Roll URLs or answered `own_broll_available: true` in the questionnaire, assign those beats before considering stock.
+2. Unsplash / Pexels stock — acceptable for agitate/context beats only.
+
+Never use stock for mechanism or proof beats — those require real product footage. Report URLs to user — they assign in editor.
 
 ---
 
@@ -176,7 +190,7 @@ dr_overlay_add({
 })
 ```
 
-Fill ALL props with real brand data from the questionnaire. Never use placeholder values.
+Fill ALL props with real brand data from the questionnaire. Never use placeholder values. Every prop field the block exposes must be populated — an empty or default-placeholder prop renders broken in the editor.
 
 ---
 
@@ -193,7 +207,12 @@ dr_transition_add({
 })
 ```
 
-**Limit: 2–3 transitions per video.** Don't over-transition. Before choosing, read [references/blocks.md](references/blocks.md) — it has the visual/emotional description of each transition so you can choose what fits the ad's energy.
+**Transition limits by video length:**
+- ≤15s (3 beats): max 1 transition
+- ≤25s (5 beats): max 2 transitions
+- ≤45s (7 beats): max 3 transitions
+
+Don't over-transition. Before choosing, read [references/blocks.md](references/blocks.md) — it has the visual/emotional description of each transition so you can choose what fits the ad's energy.
 
 | Boundary | Block | What it does |
 |---|---|---|
@@ -263,6 +282,13 @@ Generic placeholders = bad ad. Specificity = conversion.
 - Adding `hf/instagram-follow` for a product-page CTA ad. The viewer goes to a shop link — showing a follow badge confuses the CTA.
 - Adding `hf/instagram-follow` when follower count is under 10K. Weak numbers destroy trust.
 - Choosing a transition based on its name rather than its visual/emotional meaning. Read the transition descriptions in blocks.md.
+- Writing period-stacked fragments in VO: "X. Y. Z." = three TTS hard stops. Connect with commas or conjunctions.
+- Using em-dashes in VO text. TTS restarts delivery at the dash. Replace with comma or restructure.
+- Leaving numbers as digits: "70%" → TTS reads inconsistently. Spell out in the script language before calling dr_video_create.
+- Not adding audio tags. Every beat should have 1–2 Eleven v3 audio tags where they're contextually earned. Read voice.md for which tags fit which beats.
+- Selecting a voice without checking for the user's own cloned voice first. Cloned voice = highest authenticity for UGC. It must be offered before any other option.
+- Adding more transitions than the beat count warrants. ≤15s = 1 max. ≤25s = 2 max. Short videos with 3 transitions feel choppy, not cinematic.
+- Leaving any overlay prop unfilled. Every exposed prop on a block must have real data — empty props = broken overlay in editor.
 
 ---
 
