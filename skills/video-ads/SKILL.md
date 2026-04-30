@@ -53,6 +53,66 @@ Before scripting, pick an overlay palette based on the product niche. This contr
 
 If `brand_colors` were provided, use those as the primary + accent. Derive a matching palette.
 
+### Visual Director Contract
+
+Before overlays/transitions, define a short visual direction. This is the editing brief the MCP calls must follow:
+
+```json
+{
+  "style_name": "Soft Signal | Velvet Standard | Swiss Pulse | Maximalist Type | Deconstructed | Data Drift | Folk Frequency | Shadow Cut",
+  "energy": "calm | medium | high",
+  "palette": {
+    "backgroundColor": "#...",
+    "textColor": "#...",
+    "mutedTextColor": "#...",
+    "accentColor": "#..."
+  },
+  "type": {
+    "headline": "condensed heavy | humanist serif | precise grotesk | mono data",
+    "tone": "warm | premium | aggressive | clinical"
+  },
+  "overlayStyle": {
+    "surface": "solid | glass | dark-card | editorial-label",
+    "position": "top | middle | bottom",
+    "scale": "0.85-1.25",
+    "opacity": "0.80-1.00"
+  },
+  "transitionLanguage": {
+    "primary": "crossfade | blur-through | whip-pan | flash-through-white | cinematic-zoom | glitch",
+    "accent": "one transition used once at the emotional climax"
+  }
+}
+```
+
+Use HyperFrames discipline:
+- Layout first, animation second. Place overlays where they are fully readable before choosing animation.
+- Pick one visual identity and repeat it. Do not invent new colors per overlay.
+- One primary transition family plus one accent. Never randomize every boundary.
+- Video ad text must be readable in two seconds: fewer words, bigger type.
+- Avoid AI design tells: generic purple/blue gradients, random glow blobs, centered everything, empty cards, placeholder copy.
+- Keep 9:16 safe zones: important text within 64px left/right, avoid top 120px and bottom 180px unless intentionally using a CTA/lower-third.
+
+### Performance Creative Rules
+
+Use these rules for DR/VSL video structure:
+- First frames must carry the value hook. TikTok performance guidance stresses a hook, unique selling points, and a clear CTA; do not spend the first seconds on brand intro.
+- Make the video native to the platform: 9:16, safe-zone aware, visible product/person/context, and movement that feels like social footage rather than a web page.
+- Use a simple argument arc: hook → problem/intent → mechanism → proof → value/offer → CTA.
+- Create multiple creative variants by changing hook, CTA, headline, or core video asset. Google video-action guidance recommends multiple creative variants; do not treat one edit as final.
+- Show the product or proof while making claims. Empty text-only claims feel weak unless used as a deliberate hook hit.
+- CTA must tell the viewer what to do now. If urgency is used, it must be real.
+
+### VSL Overlay Logic
+
+When the ad is VSL-like, overlays should support the persuasion argument:
+- Open loop / question: `dr/search-query-overlay`, `dr/hook-question-zoom`, `dr/punctuation-pop`.
+- Problem proof: `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `dr/problem-split-compare`.
+- Mechanism: `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism.
+- Proof escalation: `dr/proof-ticker` for multiple short proof points, `dr/social-proof-reviews` for a verbatim quote.
+- Value justification: `dr/receipt-breakdown` for price, bonuses, savings, or time saved.
+- Close: `dr/scarcity-countdown` only for real urgency, plus `dr/cta-button-pulse`.
+
+
 ---
 
 ## Step 1 — Write the Script
@@ -212,17 +272,116 @@ dr_broll_suggest({ beat_type: "problem", vo_text: "still breaking out every morn
 
 Never use stock for mechanism or proof beats — those require real product footage. Report URLs to user — they assign in editor.
 
+### Sound + Audio Design
+
+HyperFrames rule: video elements are muted; audio is separate timeline media. In AdCreator, voiceover is generated per beat and overlays/transitions may carry their own deterministic `sound_effect`.
+
+Use sound-aware editing:
+- Put overlay entrances 100-300ms after a voiced punch word, not randomly at beat start.
+- Use one visual hit per phrase: punch zoom, punctuation pop, word highlight, or flash transition. Do not stack all at once.
+- For music-led ads, HyperFrames best practice is pre-extracted audio data driving subtle GSAP intensity. Keep it subtle: 3-6% scale, small glow/contrast changes, no equalizer bars, no generic waveforms, no music-note graphics.
+- Treat transition choice as sound design: `flash-through-white` = blink/hit, `whip-pan` = whoosh, `cinematic-zoom` = reveal swell, `blur-through` = breath, `crossfade` = trust continuity, `glitch` = digital malfunction.
+- Use `sound_effect` only when the visual moment implies a physical sound. Many proof/review beats should stay clean so VO stays premium.
+
+Available SFX presets:
+
+| Preset | Use |
+|---|---|
+| `soft-hit` | Big claim, product reveal, CTA arrival |
+| `pop-click` | Bullet/check/comment entrance |
+| `sub-tick` | Proof ticker, receipt row, countdown tick |
+| `whoosh` | Push, whip, slide, directional movement |
+| `flash-rise` | Flash, light leak, overexposure reveal |
+| `glitch-tick` | Digital error/glitch/problem interruption |
+| `cash-tick` | Price, savings, receipt/invoice moment |
+| `breath` | Blur/crossfade/proof-to-CTA exhale |
+
+Keep SFX volume subtle: `0.2-0.45`. Use negative `offsetMs` (`-80` to `-40`) for transitions so the sound anticipates the visual.
+
+
+### Editing Moves Beyond Overlays
+
+Use these when the VO has a punchline or statement:
+- **Punch zoom:** on a strong claim, choose/ask user to make B-Roll slightly zoomed-in before the beat, then cut or transition into a wider/normal framing. Use for hook and agitate statements.
+- **Blur-to-solid emphasis:** when footage is too busy for text, use a darker/glass overlay style or transition through `hf/color-dip` / `hf/blur-through` into a cleaner scene.
+- **Statement hit:** pair a punch word overlay (`dr/agitation-word-highlight`) with a fast transition (`hf/flash-cut` or `hf/whip-pan`) only once or twice. Too many hits feel noisy.
+- **Premium pause:** for luxury/finance/wellness, use `hf/focus-pull`, `hf/blur-crossfade`, glassmorphism, grain, and slower entrance timing. Do not use glitch/flash.
+
+
 ---
 
 ## Step 5 — Overlay Blocks
 
 Call `dr_blocks_list` to see all available blocks. Add with `dr_overlay_add`.
 
+**Overlay duration follows timeline.** If you set `duration_ms` to six seconds, the overlay remains visible for six seconds. Use longer holds for review/comment overlays; use short 1200-1800ms hits for punctuation and word highlights.
+
 See [references/blocks.md](references/blocks.md) for full block selection guide and props reference.
 
 ### Purpose-first thinking
 
 Each overlay must answer: **"What does this block DO for this specific moment?"** If you can't answer clearly, don't add it.
+
+### Overlay Styling Contract
+
+`dr_blocks_list` returns `defaultProps` and `propFields`. For DR-native overlays, always use these shared style props when available:
+
+| Prop | Use |
+|---|---|
+| `accentColor` | Brand/action color. Use for hook badges, stars, bullets, CTA button. |
+| `backgroundColor` | Card/glass/solid surface. Can be transparent `rgba(...)` for glassmorphism. |
+| `textColor` | Primary readable text. Must contrast background. |
+| `mutedTextColor` | Eyebrow/supporting text. Lower contrast but still readable. |
+| `opacity` | Overall overlay opacity. Use `0.86-0.94` for glass, `1` for CTA/proof. |
+| `scale` | Whole overlay size. Use `0.85-0.95` for lower-thirds, `1.05-1.2` for hook emphasis. |
+
+Good overlay presets:
+
+```typescript
+// Premium glassmorphism
+{
+  accentColor: "#c9a84c",
+  backgroundColor: "rgba(16,18,24,0.72)",
+  textColor: "#fffaf0",
+  mutedTextColor: "rgba(255,250,240,0.70)",
+  opacity: "0.94",
+  scale: "0.92"
+}
+
+// Clean product-page DR
+{
+  accentColor: "#e85d04",
+  backgroundColor: "#fff8f2",
+  textColor: "#191410",
+  mutedTextColor: "rgba(25,20,16,0.62)",
+  opacity: "1",
+  scale: "1"
+}
+
+// Bold fitness / launch
+{
+  accentColor: "#ff2f2f",
+  backgroundColor: "rgba(10,10,10,0.88)",
+  textColor: "#ffffff",
+  mutedTextColor: "rgba(255,255,255,0.72)",
+  opacity: "1",
+  scale: "1.12"
+}
+```
+
+Position logic:
+- Hook: top or middle, full-frame dominance, `scale` 1.05-1.2.
+- Agitation word: middle/bottom third, never cover face/product, `scale` 1.
+- Review/social proof: bottom third, `scale` 0.85-1.0, glass or solid card.
+- Product reveal: middle/top third, leave product visible.
+- CTA: bottom third, large enough for thumb-stop, `scale` 1-1.15.
+
+Bad practice:
+- Do not use more than two overlay surface types in one ad.
+- Do not use glassmorphism over busy footage unless adding `backgroundColor` alpha >= 0.72.
+- Do not put tiny web-app typography in video. Overlay copy must be short and large.
+- Do not use default placeholder styling if brand colors are known.
+
 
 | Moment | Purpose | Block | Condition |
 |---|---|---|---|
@@ -247,7 +406,8 @@ dr_overlay_add({
   block_id: "hf/instagram-follow",
   props: { handle: "@brand", followers: "47.5K followers", displayName: "Brand Name" },
   timing: { mode: "beat-relative", beat_id: "<proof beat id>", at_ms: 500, duration_ms: 3500 },
-  track_index: 1
+  track_index: 1,
+  sound_effect: { presetId: "pop-click", volume: 0.28, offsetMs: 0 }
 })
 ```
 
@@ -264,7 +424,8 @@ dr_transition_add({
   video_id: "...",
   from_beat_id: "<hook beat id>",
   to_beat_id: "<problem beat id>",
-  block_id: "hf/flash-through-white"
+  block_id: "hf/flash-through-white",
+  sound_effect: { presetId: "flash-rise", volume: 0.36, offsetMs: -50 }
 })
 ```
 
@@ -367,7 +528,7 @@ Generic placeholders = bad ad. Specificity = conversion.
 
 - **[references/beats.md](references/beats.md)** — Beat word counts, timing rules, niche examples, anti-patterns. Read when scripting.
 - **[references/copywriting.md](references/copywriting.md)** — DR formulas, hook patterns, mechanism naming, proof formats, CTA structures. Read when writing hooks or need copy inspiration.
-- **[references/blocks.md](references/blocks.md)** — Full block catalog, props reference, timing recommendations. Read when adding overlays or transitions.
+- **[references/blocks.md](references/blocks.md)** — Full block catalog, overlay styling contract, props reference, timing recommendations. Read when adding overlays or transitions.
 - **[references/broll.md](references/broll.md)** — B-Roll strategy per beat, source priority, what to look for. Read when suggesting B-Roll.
 - **[references/voice.md](references/voice.md)** — Voice selection by niche, ElevenLabs model settings, speed by beat type. Read when selecting voice or troubleshooting TTS.
 - **[palettes/beauty-wellness.md](palettes/beauty-wellness.md)** — Pastel, clean, skin tones.

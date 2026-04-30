@@ -53,6 +53,66 @@ Before scripting, pick an overlay palette based on the product niche. This contr
 
 If `brand_colors` were provided, use those as the primary + accent. Derive a matching palette.
 
+### Visual Director Contract
+
+Before overlays/transitions, define a short visual direction. This is the editing brief the MCP calls must follow:
+
+```json
+{
+  "style_name": "Soft Signal | Velvet Standard | Swiss Pulse | Maximalist Type | Deconstructed | Data Drift | Folk Frequency | Shadow Cut",
+  "energy": "calm | medium | high",
+  "palette": {
+    "backgroundColor": "#...",
+    "textColor": "#...",
+    "mutedTextColor": "#...",
+    "accentColor": "#..."
+  },
+  "type": {
+    "headline": "condensed heavy | humanist serif | precise grotesk | mono data",
+    "tone": "warm | premium | aggressive | clinical"
+  },
+  "overlayStyle": {
+    "surface": "solid | glass | dark-card | editorial-label",
+    "position": "top | middle | bottom",
+    "scale": "0.85-1.25",
+    "opacity": "0.80-1.00"
+  },
+  "transitionLanguage": {
+    "primary": "crossfade | blur-through | whip-pan | flash-through-white | cinematic-zoom | glitch",
+    "accent": "one transition used once at the emotional climax"
+  }
+}
+```
+
+Use HyperFrames discipline:
+- Layout first, animation second. Place overlays where they are fully readable before choosing animation.
+- Pick one visual identity and repeat it. Do not invent new colors per overlay.
+- One primary transition family plus one accent. Never randomize every boundary.
+- Video ad text must be readable in two seconds: fewer words, bigger type.
+- Avoid AI design tells: generic purple/blue gradients, random glow blobs, centered everything, empty cards, placeholder copy.
+- Keep 9:16 safe zones: important text within 64px left/right, avoid top 120px and bottom 180px unless intentionally using a CTA/lower-third.
+
+### Performance Creative Rules
+
+Use these rules for DR/VSL video structure:
+- First frames must carry the value hook. TikTok performance guidance stresses a hook, unique selling points, and a clear CTA; do not spend the first seconds on brand intro.
+- Make the video native to the platform: 9:16, safe-zone aware, visible product/person/context, and movement that feels like social footage rather than a web page.
+- Use a simple argument arc: hook → problem/intent → mechanism → proof → value/offer → CTA.
+- Create multiple creative variants by changing hook, CTA, headline, or core video asset. Google video-action guidance recommends multiple creative variants; do not treat one edit as final.
+- Show the product or proof while making claims. Empty text-only claims feel weak unless used as a deliberate hook hit.
+- CTA must tell the viewer what to do now. If urgency is used, it must be real.
+
+### VSL Overlay Logic
+
+When the ad is VSL-like, overlays should support the persuasion argument:
+- Open loop / question: `dr/search-query-overlay`, `dr/hook-question-zoom`, `dr/punctuation-pop`.
+- Problem proof: `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `dr/problem-split-compare`.
+- Mechanism: `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism.
+- Proof escalation: `dr/proof-ticker` for multiple short proof points, `dr/social-proof-reviews` for a verbatim quote.
+- Value justification: `dr/receipt-breakdown` for price, bonuses, savings, or time saved.
+- Close: `dr/scarcity-countdown` only for real urgency, plus `dr/cta-button-pulse`.
+
+
 ---
 
 ## Step 1 — Write the Script
@@ -68,59 +128,120 @@ If `brand_colors` were provided, use those as the primary + accent. Derive a mat
 - **Social follow CTA** (driving followers): Use `hf/instagram-follow` or `hf/tiktok-follow`. CTA is "follow for more." These are rare — most DR ads drive to product pages.
 - **When unsure:** Ask the user. A 25% discount CTA with a landing page URL is always a product-page CTA.
 
+### Script Process — Full Monologue First
+
+**DO NOT write beat-by-beat.** Write a single continuous monologue, then assign beats after.
+
+**Phase 1 — Write the full monologue:**
+Write the entire script as one person telling one story. No beat labels, no transitions announced. Natural spoken language. Paragraphs mark where the emotional focus shifts.
+
+- Write as if the speaker is telling a friend — not reading a list
+- Each paragraph flows from the previous one without announcing the topic change
+- The CTA should feel like a natural conclusion, not a sales pitch
+
+**Phase 2 — Read it aloud (mandatory):**
+Read the full monologue aloud. If any sentence sounds choppy, disconnected, or announcement-style, rewrite it before proceeding. Fix issues now — TTS will make them worse.
+
+**Phase 3 — TTS normalization (mandatory):**
+Before assigning beats, clean the text:
+- No em-dashes (—) — replace with comma or restructure
+- No period-stacked fragments — connect with conjunctions
+- Spell out numbers: "70%" → "siebzig Prozent" (DE) / "seventy percent" (EN)
+- Spell out currency: "25€" → "fünfundzwanzig Euro"
+
+**Phase 4 — Assign paragraphs to beat types:**
+Label each paragraph with its beat type. Do NOT rewrite sentences during this step — just assign. The monologue must remain identical after assignment.
+
+**Phase 5 — Add audio tags:**
+Add 1–2 ElevenLabs v3 audio tags per beat. See [references/voice.md](references/voice.md) for which tags fit which beats. Place tag at the start of the beat's vo_text. Do not change the spoken text.
+
+**Show the user the full monologue BEFORE calling any tool.** Get confirmation or iterate. Only call `dr_voice_list` + `dr_video_create` after the script is approved.
+
 ### Templates
 
 | Template | Duration | Beat sequence |
 |---|---|---|
 | `classic_dr` | 45s / 7 beats | hook → problem → agitate → why_others_fail → mechanism → proof → cta |
 | `problem_solution` | 30s / 6 beats | hook → problem → value_prop → proof → objection → cta |
-| `ugc_style` | 25s / 5 beats | hook → proof → mechanism → objection → cta |
+| `ugc_style` | 25s / 5 beats | hook → problem → mechanism → proof → cta |
 | `short_hook` | 15s / 3 beats | hook → mechanism → cta |
 
-### Example — 30s skincare (English)
+### Full example — German fitness supplement (UGC style, 30s)
+
+**Phase 1 — Full monologue:**
+
+> Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen.
+>
+> Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht.
+>
+> Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln.
+>
+> Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse.
+>
+> Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten.
+
+**Phase 4 — Beat assignment:**
 
 ```json
 [
-  { "beat_type": "hook",       "vo_text": "Your skincare routine is making it worse." },
-  { "beat_type": "problem",    "vo_text": "If you're washing your face twice a day and still breaking out, it's not your fault." },
-  { "beat_type": "value_prop", "vo_text": "Balanced Barrier Serum resets your skin's pH in 7 days — no harsh chemicals." },
-  { "beat_type": "proof",      "vo_text": "8,400 five-star reviews. Dermatologist-tested. And it shows." },
-  { "beat_type": "objection",  "vo_text": "No fragrance. No parabens. 60-day money-back guarantee." },
-  { "beat_type": "cta",        "vo_text": "Tap below. 20% off your first order — today only." }
+  { "beat_type": "hook",      "vo_text": "Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen." },
+  { "beat_type": "problem",   "vo_text": "Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht." },
+  { "beat_type": "mechanism", "vo_text": "Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln." },
+  { "beat_type": "proof",     "vo_text": "Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse." },
+  { "beat_type": "cta",       "vo_text": "Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten." }
 ]
 ```
 
-### Example — 25s German fitness supplement (UGC style)
+**Phase 5 — Audio tags added (final vo_text):**
 
 ```json
 [
-  { "beat_type": "hook",       "vo_text": "Ich hab monatelang trainiert und bin kein Stück weitergekommen." },
-  { "beat_type": "problem",    "vo_text": "Jedes Training alles gegeben, Protein getrackt, genug geschlafen. Trotzdem stagniert." },
-  { "beat_type": "mechanism",  "vo_text": "Bis mir jemand erklärt hat: du lädst einfach falsch nach. Kreatin HCL lädt direkt in die Zelle — keine Einlagerungen." },
-  { "beat_type": "proof",      "vo_text": "Ich hab's einen Monat probiert. Nach zwei Wochen hat sich was verändert. Das ist kein Placebo." },
-  { "beat_type": "cta",        "vo_text": "Link im Bio. 25% auf das 3er-Pack — verkauft sich schnell." }
+  { "beat_type": "hook",      "vo_text": "[direct] Ich hab Kreatin genommen und hab ausgesehen als hätte mich jemand mit einer Fahrradpumpe aufgepumpt. Gesicht aufgedunsen, Bauch gebläht, und irgendwann hab ich's einfach sein lassen." },
+  { "beat_type": "problem",   "vo_text": "[empathetic] Dabei hab ich echt alles probiert. Mehr Wasser trinken, mit dem Essen nehmen... Hat alles nix gebracht. Weil keiner dieser Tipps das eigentliche Problem angeht." },
+  { "beat_type": "mechanism", "vo_text": "[confident] Normales Monohydrat löst sich kaum auf. Es liegt im Magen, zieht Wasser, und ein Großteil verlässt deinen Körper bevor überhaupt was in der Muskulatur ankommt. Kreatin HCL dagegen löst sich komplett auf, direkte Aufnahme, kein Blähbauch, kein aufgedunsenes Gesicht. Und statt fünf Gramm reichen vier Kapseln." },
+  { "beat_type": "proof",     "vo_text": "[warm] Über tausend zweihundert Leute berichten genau dasselbe und sehen jetzt zum ersten Mal wirklich Ergebnisse." },
+  { "beat_type": "cta",       "vo_text": "[excited] Wenn du Kreatin schon mal aufgegeben hast, dann ist das der Grund. Gerade gibt's das Dreier-Bundle mit fünfundzwanzig Prozent Rabatt. Link unten." }
 ]
 ```
 
 ---
 
-## Step 2 — Create Video
+## Step 2 — Select Voice + Create Video
 
-Call `dr_voice_list` first to select the voice. Then:
+Call `dr_voice_list`. Filter by target language first. Then apply priority order from [references/voice.md](references/voice.md): cloned > professional > premade.
+
+**Present max 3 options to the user** with name, category, and preview link. Format:
+
+```
+Voice options for this ad:
+
+1. **[Name]** (cloned) — your own voice, most authentic for UGC
+   Preview: [preview_url]
+
+2. **[Name]** (professional, female, conversational) — warm lifestyle tone
+   Preview: [preview_url]
+
+3. **[Name]** (professional, male, energetic) — fitness/supplement energy
+   Preview: [preview_url]
+
+Which would you like? (reply with 1/2/3 or voice name)
+```
+
+Wait for user confirmation before calling `dr_video_create`.
+
+Then:
 
 ```typescript
 dr_video_create({
   title: "Product Name — Hook Variant 1",
-  template: "problem_solution",
-  beats: [ /* full script from Step 1 */ ],
-  voice_id: "...",       // from dr_voice_list
+  template: "ugc_style",
+  beats: [ /* approved script from Step 1 with audio tags */ ],
+  voice_id: "...",       // confirmed by user
   caption_style: "pop"   // pop (default) | classic | highlight
 })
 ```
 
 Returns: `videoId`, `editorUrl`, `beats[]` with IDs → store all for next steps.
-
-See [references/voice.md](references/voice.md) for voice selection logic and ElevenLabs model settings.
 
 ---
 
@@ -145,7 +266,32 @@ Call `dr_broll_suggest` per beat for media options. See [references/broll.md](re
 dr_broll_suggest({ beat_type: "problem", vo_text: "still breaking out every morning..." })
 ```
 
-Returns results ranked: library (own B-Roll) → unsplash → pexels. Report URLs to user — they assign in editor.
+**Priority order:**
+1. User's own uploaded assets (`category: "library"`) — always first. If the user provided B-Roll URLs or answered `own_broll_available: true` in the questionnaire, assign those beats before considering stock.
+2. Unsplash / Pexels stock — acceptable for agitate/context beats only.
+
+Never use stock for mechanism or proof beats — those require real product footage. Report URLs to user — they assign in editor.
+
+### Sound + Audio Design
+
+HyperFrames rule: video elements are muted; audio is separate timeline media. In AdCreator, voiceover is generated per beat and transitions/overlays should be visually timed to the VO until dedicated SFX/music tools are available.
+
+Use sound-aware editing:
+- Put overlay entrances 100-300ms after a voiced punch word, not randomly at beat start.
+- Use one visual hit per phrase: punch zoom, punctuation pop, word highlight, or flash transition. Do not stack all at once.
+- For music-led ads, HyperFrames best practice is pre-extracted audio data driving subtle GSAP intensity. Keep it subtle: 3-6% scale, small glow/contrast changes, no equalizer bars, no generic waveforms, no music-note graphics.
+- Treat transition choice as sound design: `flash-through-white` = blink/hit, `whip-pan` = whoosh, `cinematic-zoom` = reveal swell, `blur-through` = breath, `crossfade` = trust continuity, `glitch` = digital malfunction.
+- If the user supplies music/SFX URLs, note them in the editor handoff. Current MCP flow does not expose arbitrary SFX track placement yet.
+
+
+### Editing Moves Beyond Overlays
+
+Use these when the VO has a punchline or statement:
+- **Punch zoom:** on a strong claim, choose/ask user to make B-Roll slightly zoomed-in before the beat, then cut or transition into a wider/normal framing. Use for hook and agitate statements.
+- **Blur-to-solid emphasis:** when footage is too busy for text, use a darker/glass overlay style or transition through `hf/color-dip` / `hf/blur-through` into a cleaner scene.
+- **Statement hit:** pair a punch word overlay (`dr/agitation-word-highlight`) with a fast transition (`hf/flash-cut` or `hf/whip-pan`) only once or twice. Too many hits feel noisy.
+- **Premium pause:** for luxury/finance/wellness, use `hf/focus-pull`, `hf/blur-crossfade`, glassmorphism, grain, and slower entrance timing. Do not use glitch/flash.
+
 
 ---
 
@@ -153,18 +299,91 @@ Returns results ranked: library (own B-Roll) → unsplash → pexels. Report URL
 
 Call `dr_blocks_list` to see all available blocks. Add with `dr_overlay_add`.
 
+**Overlay duration follows timeline.** If you set `duration_ms` to six seconds, the overlay remains visible for six seconds. Use longer holds for review/comment overlays; use short 1200-1800ms hits for punctuation and word highlights.
+
 See [references/blocks.md](references/blocks.md) for full block selection guide and props reference.
 
-### Quick reference — always use these
+### Purpose-first thinking
 
-| Beat | Block ID | When to use |
-|---|---|---|
-| hook | `dr/hook-bigtext-pop` | Always — pattern interrupt |
-| mechanism/value_prop | `dr/solution-product-reveal` | Always — benefit bullets |
-| cta | `dr/cta-button-pulse` | **ALWAYS on CTA beat** |
-| hook + cta | `dr/fx-grain-overlay` | Always — premium texture |
-| proof (social) | `hf/instagram-follow` or `hf/tiktok-follow` | **Only** if: (1) ad goal is social follow OR (2) brand has 10K+ followers AND it reinforces trust |
-| proof (review) | `dr/social-proof-reviews` | When you have a real verbatim testimonial quote |
+Each overlay must answer: **"What does this block DO for this specific moment?"** If you can't answer clearly, don't add it.
+
+### Overlay Styling Contract
+
+`dr_blocks_list` returns `defaultProps` and `propFields`. For DR-native overlays, always use these shared style props when available:
+
+| Prop | Use |
+|---|---|
+| `accentColor` | Brand/action color. Use for hook badges, stars, bullets, CTA button. |
+| `backgroundColor` | Card/glass/solid surface. Can be transparent `rgba(...)` for glassmorphism. |
+| `textColor` | Primary readable text. Must contrast background. |
+| `mutedTextColor` | Eyebrow/supporting text. Lower contrast but still readable. |
+| `opacity` | Overall overlay opacity. Use `0.86-0.94` for glass, `1` for CTA/proof. |
+| `scale` | Whole overlay size. Use `0.85-0.95` for lower-thirds, `1.05-1.2` for hook emphasis. |
+
+Good overlay presets:
+
+```typescript
+// Premium glassmorphism
+{
+  accentColor: "#c9a84c",
+  backgroundColor: "rgba(16,18,24,0.72)",
+  textColor: "#fffaf0",
+  mutedTextColor: "rgba(255,250,240,0.70)",
+  opacity: "0.94",
+  scale: "0.92"
+}
+
+// Clean product-page DR
+{
+  accentColor: "#e85d04",
+  backgroundColor: "#fff8f2",
+  textColor: "#191410",
+  mutedTextColor: "rgba(25,20,16,0.62)",
+  opacity: "1",
+  scale: "1"
+}
+
+// Bold fitness / launch
+{
+  accentColor: "#ff2f2f",
+  backgroundColor: "rgba(10,10,10,0.88)",
+  textColor: "#ffffff",
+  mutedTextColor: "rgba(255,255,255,0.72)",
+  opacity: "1",
+  scale: "1.12"
+}
+```
+
+Position logic:
+- Hook: top or middle, full-frame dominance, `scale` 1.05-1.2.
+- Agitation word: middle/bottom third, never cover face/product, `scale` 1.
+- Review/social proof: bottom third, `scale` 0.85-1.0, glass or solid card.
+- Product reveal: middle/top third, leave product visible.
+- CTA: bottom third, large enough for thumb-stop, `scale` 1-1.15.
+
+Bad practice:
+- Do not use more than two overlay surface types in one ad.
+- Do not use glassmorphism over busy footage unless adding `backgroundColor` alpha >= 0.72.
+- Do not put tiny web-app typography in video. Overlay copy must be short and large.
+- Do not use default placeholder styling if brand colors are known.
+
+
+| Moment | Purpose | Block | Condition |
+|---|---|---|---|
+| Hook opens | Pattern interrupt — force attention | `dr/hook-bigtext-pop` | Always |
+| Mechanism/value_prop | Amplify the solution — make benefit visual | `dr/solution-product-reveal` | When product has clear bullet benefits |
+| CTA | Drive the action — make clicking feel urgent | `dr/cta-button-pulse` | Always on CTA beat |
+| Hook or CTA | Premium cinematic feel | `dr/fx-grain-overlay` | When the ad has a premium/lifestyle tone |
+| Proof (social follow) | Show community size as trust signal | `hf/instagram-follow` or `hf/tiktok-follow` | **Only** if goal = social follow OR 10K+ followers |
+| Proof (testimonial) | Show specific social proof | `dr/social-proof-reviews` | Only with a real verbatim quote |
+
+**Overlay planning process:**
+1. List each beat
+2. For each beat, ask: "Is there a specific visual amplification this beat needs?"
+3. If yes: which block serves that purpose?
+4. If no: add nothing — a clean B-Roll beat is better than a cluttered overlay beat
+
+Max 3 overlays per beat. But most beats should have 0–1.
 
 ```typescript
 dr_overlay_add({
@@ -176,7 +395,7 @@ dr_overlay_add({
 })
 ```
 
-Fill ALL props with real brand data from the questionnaire. Never use placeholder values.
+Fill ALL props with real brand data from the questionnaire. Never use placeholder values. Every prop field the block exposes must be populated — an empty or default-placeholder prop renders broken in the editor.
 
 ---
 
@@ -193,15 +412,30 @@ dr_transition_add({
 })
 ```
 
-**Limit: 2–3 transitions per video.** Don't over-transition. Before choosing, read [references/blocks.md](references/blocks.md) — it has the visual/emotional description of each transition so you can choose what fits the ad's energy.
+### Emotional Arc Thinking (not mechanical placement)
 
-| Boundary | Block | What it does |
+Transitions serve emotional pivots — moments where the viewer's mental state shifts. Ask: **"What changes in the viewer's feeling at this boundary?"**
+
+Every ad has 2–3 real pivots. Find them first, then choose a transition that matches the energy of THAT shift:
+
+| Emotional shift | Pivot type | Right transition |
 |---|---|---|
-| hook → problem | `hf/flash-through-white` | Luminance burst to white — viewer blinks. Shock. Aggression. |
-| problem → agitate | `hf/whip-pan` | Motion blur horizontal sweep. Kinetic escalation. |
-| agitate → mechanism | `hf/cinematic-zoom` (**max 1x**) | Scale collapse + blur. Revelation. The climax moment. |
-| mechanism → proof | `hf/crossfade` | Opacity dissolve, no motion. Continuity. Trust. |
-| proof → cta | `hf/blur-through` | Full abstraction then resolve. Soft drift. The exhale before the ask. |
+| Interrupt → Recognition (hook→problem) | **The hook lands** — viewer says "wait, that's me" | `hf/flash-through-white` — shock, aggression |
+| Problem → Escalation (problem→agitate) | **The pain deepens** — frustration stacks | `hf/whip-pan` — kinetic, building urgency |
+| Stuck → Revelation (agitate/problem→mechanism) | **The turn** — from darkness to answer | `hf/cinematic-zoom` — climax, use max once |
+| Explanation → Trust (mechanism→proof) | **Belief builds** — facts settle in | `hf/crossfade` — continuity, no drama |
+| Trust → Action (proof→cta) | **The exhale** — soft transition into the ask | `hf/blur-through` — resolve, invitation |
+
+**Decision process:**
+1. Map the ad's emotional arc beat by beat (1–2 sentences per beat: "viewer feels...")
+2. Find where the feeling shifts hardest (usually 2–3 moments)
+3. Place one transition per real pivot — not at every beat boundary
+4. If a boundary has no emotional shift (two beats of the same emotional state), no transition
+
+**Limits are consequences, not rules:**
+- Short ads (≤25s) typically have 1–2 real pivots max
+- `hf/cinematic-zoom` can only be the climax moment — if your ad has no agitate beat or no single revelation moment, skip it
+- Never stack two high-energy transitions adjacent to each other (flash + whip-pan in sequence = chaotic, not powerful)
 
 ---
 
@@ -263,6 +497,13 @@ Generic placeholders = bad ad. Specificity = conversion.
 - Adding `hf/instagram-follow` for a product-page CTA ad. The viewer goes to a shop link — showing a follow badge confuses the CTA.
 - Adding `hf/instagram-follow` when follower count is under 10K. Weak numbers destroy trust.
 - Choosing a transition based on its name rather than its visual/emotional meaning. Read the transition descriptions in blocks.md.
+- Writing period-stacked fragments in VO: "X. Y. Z." = three TTS hard stops. Connect with commas or conjunctions.
+- Using em-dashes in VO text. TTS restarts delivery at the dash. Replace with comma or restructure.
+- Leaving numbers as digits: "70%" → TTS reads inconsistently. Spell out in the script language before calling dr_video_create.
+- Not adding audio tags. Every beat should have 1–2 Eleven v3 audio tags where they're contextually earned. Read voice.md for which tags fit which beats.
+- Selecting a voice without checking for the user's own cloned voice first. Cloned voice = highest authenticity for UGC. It must be offered before any other option.
+- Adding more transitions than the beat count warrants. ≤15s = 1 max. ≤25s = 2 max. Short videos with 3 transitions feel choppy, not cinematic.
+- Leaving any overlay prop unfilled. Every exposed prop on a block must have real data — empty props = broken overlay in editor.
 
 ---
 
@@ -270,7 +511,7 @@ Generic placeholders = bad ad. Specificity = conversion.
 
 - **[references/beats.md](references/beats.md)** — Beat word counts, timing rules, niche examples, anti-patterns. Read when scripting.
 - **[references/copywriting.md](references/copywriting.md)** — DR formulas, hook patterns, mechanism naming, proof formats, CTA structures. Read when writing hooks or need copy inspiration.
-- **[references/blocks.md](references/blocks.md)** — Full block catalog, props reference, timing recommendations. Read when adding overlays or transitions.
+- **[references/blocks.md](references/blocks.md)** — Full block catalog, overlay styling contract, props reference, timing recommendations. Read when adding overlays or transitions.
 - **[references/broll.md](references/broll.md)** — B-Roll strategy per beat, source priority, what to look for. Read when suggesting B-Roll.
 - **[references/voice.md](references/voice.md)** — Voice selection by niche, ElevenLabs model settings, speed by beat type. Read when selecting voice or troubleshooting TTS.
 - **[palettes/beauty-wellness.md](palettes/beauty-wellness.md)** — Pastel, clean, skin tones.

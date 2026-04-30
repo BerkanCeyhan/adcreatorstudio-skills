@@ -10,6 +10,56 @@
 - You add `hf/instagram-follow` for brands with under 10K followers. Weak follower count destroys trust instead of building it. Only use if the number is impressive.
 - You add `hf/instagram-follow` on product-page CTA ads. If the viewer is going to a shop link, showing "follow us" confuses the call to action.
 
+
+
+## Overlay Design System
+
+Use `dr_blocks_list` as source of truth. The tool returns `propFields`; fill every field with real data. For DR-native overlays, these style props are the standard interface:
+
+| Field | Good values | Rule |
+|---|---|---|
+| `accentColor` | brand accent hex, warm action color | One accent per ad. Use same across overlays. |
+| `backgroundColor` | `#fff8f2`, `rgba(12,10,8,0.82)`, `rgba(255,255,255,0.72)` | Use solid for clarity, glass for premium, dark-card for authority. |
+| `textColor` | high contrast foreground | Must read over video at phone size. |
+| `mutedTextColor` | 65-80% contrast | Eyebrows, notes, attribution. |
+| `opacity` | `0.86` to `1` | Lower than 0.80 usually weakens readability. |
+| `scale` | `0.85` to `1.2` | Size the whole block for 9:16 instead of stuffing text. |
+
+### Style Presets
+
+| Preset | Use | Props |
+|---|---|---|
+| Premium Glass | beauty, finance, luxury | `backgroundColor: rgba(16,18,24,0.72)`, `textColor: #fffaf0`, `accentColor: #c9a84c`, `opacity: 0.94`, `scale: 0.92` |
+| Clean DR Card | product-page ads, proof | `backgroundColor: #fff8f2`, `textColor: #191410`, `accentColor: #e85d04`, `opacity: 1`, `scale: 1` |
+| Kinetic Dark | fitness, launches | `backgroundColor: rgba(10,10,10,0.88)`, `textColor: #fff`, `accentColor: #ff2f2f`, `opacity: 1`, `scale: 1.12` |
+| Soft Wellness | skincare, wellness | `backgroundColor: rgba(255,248,236,0.82)`, `textColor: #34241c`, `accentColor: #d98b62`, `opacity: 0.96`, `scale: 0.95` |
+
+### 9:16 Placement
+
+- Top overlays: hook/kicker only. Keep below 120px unless the subject is lower in frame.
+- Middle overlays: mechanisms, big claims, punch words. Keep faces/products visible.
+- Bottom overlays: reviews, follow cards, CTA. Keep above bottom 180px.
+- Never cover captions and CTA at the same time. If captions occupy bottom third, put overlay top/middle or shorten overlay duration.
+
+### Typography Rules
+
+- Headline overlays: 60px+ equivalent, 700-950 weight, max 8 words.
+- Review/CTA body: 24px+ equivalent, short lines.
+- Do not use tiny SaaS-card text. Social video is watched on phones.
+- Avoid generic font choices in custom HTML blocks: Inter, Roboto, Open Sans, Poppins, Syne. Prefer one strong display voice plus restrained supporting text.
+
+### Bad-Practice Filter
+
+Reject these before calling tools:
+- Purple-blue gradient by default.
+- Random glass card on every beat.
+- Different transition style at every boundary.
+- Five overlays on one beat.
+- Placeholder defaults left in props.
+- Centered everything with equal size.
+- Proof overlay without real proof.
+- Social-follow overlay on product-page CTA.
+
 ## Extensibility
 
 Blocks are served dynamically by `dr_blocks_list`. Always call it before Step 5 — do NOT rely on memory of what blocks exist. New blocks appear with `drUseCase` and `defaultProps` in the response. Use those fields as the primary signal for how to use a new block:
@@ -256,3 +306,85 @@ dr_transition_add({
   caption: "So tired of trying everything"
 }
 ```
+
+## New Flexible Overlay Blocks
+
+These are agent-friendly DR-native overlays. They all accept the standard styling contract from `dr_blocks_list`.
+
+| Beat goal | Block ID | Use it for | Key props |
+|---|---|---|---|
+| benefits / objections | `dr/animated-bullet-list` | 2-4 animated bullets, numbered list, checks, dots, or no markers | `title`, `item1`-`item4`, `markerStyle`, style props |
+| transformation path | `dr/step-path-goal` | Step-by-step way from current state to desired result | `startLabel`, `step1`-`step3`, `goalLabel`, style props |
+| product proof / examples | `dr/media-swap-stack` | 1-3 images swapping in a paced frame | `title`, `imageUrl1`-`imageUrl3`, `caption`, style props |
+| problem/demo video | `dr/video-inset-card` | Inset video or poster image for problem clip, product detail, testimonial B-roll | `title`, `videoUrl`, `posterUrl`, `caption`, style props |
+| comment-led proof | `dr/instagram-comment` | Instagram-style comment when the VO mentions a comment, DM, creator reply, or customer objection | `username`, `comment`, `avatarUrl`, `meta`, `blurIdentity`, style props |
+| comment-led hook | `dr/tiktok-comment` | TikTok reply/comment bubble for native UGC hooks and objection handling | `username`, `comment`, `avatarUrl`, `meta`, `blurIdentity`, style props |
+| fast proof | `dr/proof-ticker` | Kinetic ticker/scoreboard for 3-4 short proof claims | `label`, `proof1`-`proof4`, style props |
+| value math | `dr/receipt-breakdown` | Receipt/invoice breakdown for price, savings, bonuses, time saved | `title`, line labels/values, `totalLabel`, `totalValue`, style props |
+| local proof | `dr/map-pin-proof` | Map pin + local/community count when location matters | `location`, `proof`, `subline`, style props |
+| problem intent | `dr/search-query-overlay` | Animated search query for buyer-intent hooks and common questions | `query`, `result1`, `result2`, `sourceLabel`, style props |
+| testimonial DM | `dr/dm-screenshot` | Native message screenshot for private proof or creator replies | `sender`, `message1`, `message2`, `reply`, `avatarUrl`, `blurIdentity`, style props |
+| real urgency | `dr/scarcity-countdown` | Clean typographic countdown for true deadlines | `label`, `time`, style props |
+| reaction / pattern interrupt | `dr/punctuation-pop` | Huge `?`, `!`, or `?!` in the middle of the 9:16 frame | `symbol`, `caption`, style props |
+
+Placement recipes:
+- Review in the middle: `dr/social-proof-reviews` with `position:"middle"`, `widthPercent:"78"`, `headlineSizePx:"44"`, `backgroundColor:"rgba(255,248,242,.94)"`.
+- Premium glass review: `position:"middle"`, `backgroundColor:"rgba(12,14,18,.72)"`, `textColor:"#fffaf0"`, `mutedTextColor:"rgba(255,250,240,.72)"`, `borderColor:"rgba(255,255,255,.22)"`, `borderRadiusPx:"36"`.
+- Big question: `dr/punctuation-pop` with `position:"middle"`, `headlineSizePx:"220"`, `widthPercent:"58"`, `animation:"pop"`.
+- Benefit stack: `dr/animated-bullet-list` with `position:"middle"`, `markerStyle:"numbers"`, `animation:"stagger"`, `widthPercent:"84"`.
+- Demo inset: `dr/video-inset-card` with `position:"middle"`, `widthPercent:"78"`, `borderRadiusPx:"36"`, `animation:"pop"`.
+- Proof ticker: `dr/proof-ticker` with `proof1:"1,200+ customers"`, `proof2:"4.8 stars"`, `proof3:"Ships in 24h"`.
+- Receipt value stack: `dr/receipt-breakdown` with concrete line items; never fake savings.
+- Search hook: `dr/search-query-overlay` with the exact question the buyer would type.
+- Scarcity timer: `dr/scarcity-countdown` only when the deadline is real; pair separately with `dr/cta-button-pulse` for the CTA.
+
+Design guardrails:
+- Do not use more than one large center overlay at the same time.
+- Do not put a review card and CTA in the same screen region.
+- Do not shrink text below readable phone size to fit long copy. Shorten copy instead.
+- Do not use `custom` placement as a default; first try top/middle/bottom.
+- Use `dr_blocks_list` `propFields` every time. It returns exact controls, options, ranges, and defaults.
+
+
+### Motion Graphics Overlay Ideas
+
+Use these as future-ready patterns when choosing or requesting overlays. They feel like edited social ads, not web cards:
+
+- Curvy path / journey line: animated route draws from step one to two to three, then lands on goal. Best for transformation and mechanism beats.
+- Native comment overlays: Instagram/TikTok comment bubble for comment-led hooks, objections, and proof. Blur avatar/name when identity should be anonymous.
+- Spec dial / product orbit: product reveal with orbit rings and three specs, not another bullet card. Best for mechanism/value prop.
+- Kinetic proof ticker: use `dr/proof-ticker` for short proof claims cycling like scoreboard chips. Good for high-energy proof beats.
+- Receipt / invoice breakdown: use `dr/receipt-breakdown` for price, time saved, or cost comparison. Good for finance, SaaS, coaching.
+- Map pin / local proof: use `dr/map-pin-proof` for location or audience proof. Good for local services and event ads.
+- Search query overlay: use `dr/search-query-overlay` when the user types the problem into a native search bar. Good for problem-aware hooks.
+- DM screenshot reveal: use `dr/dm-screenshot` for message proof with anonymized avatar. Good for coaching/service proof.
+- Before-after slider handle: vertical wipe with draggable-handle styling. Good for skincare, fitness, renovation.
+- Countdown / scarcity badge: animated timer or stock count. Use only on real urgency.
+
+Selection rules:
+- If VO says “someone commented”, use `dr/instagram-comment` or `dr/tiktok-comment`, not a generic review card.
+- If VO explains a process, use `dr/step-path-goal`, not bullets.
+- If VO lists benefits, use `dr/animated-bullet-list`.
+- If VO reveals the mechanism, use `dr/solution-product-reveal`.
+- If VO shows footage or a screenshot, use `dr/video-inset-card` with `posterUrl` or `videoUrl`.
+- If VO says "people near you", "in Berlin", "local", or "nearby", use `dr/map-pin-proof`.
+- If VO says "costs", "saves", "included", "bonus", or "today only", use `dr/receipt-breakdown`.
+- If VO says "limited", "ends", "stock", or a real deadline, use `dr/scarcity-countdown`.
+- If VO starts with a question a buyer would search, use `dr/search-query-overlay`.
+
+### VSL-Style Component Logic
+
+VSL overlays should support argument flow, not decorate randomly:
+
+- **Open loop:** `dr/search-query-overlay`, `dr/punctuation-pop`, or `dr/hook-question-zoom` for the first unresolved question.
+- **Pain proof:** `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, or `dr/problem-split-compare` when showing evidence the problem is real.
+- **Mechanism:** `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism, `dr/animated-bullet-list` only for compact benefits.
+- **Proof escalation:** `dr/proof-ticker` for multiple proof points, `dr/social-proof-reviews` for one verbatim testimonial.
+- **Value justification:** `dr/receipt-breakdown` before the offer to explain price/value.
+- **Close:** `dr/scarcity-countdown` as a clean timer plus `dr/cta-button-pulse` when urgency is real; otherwise only use CTA.
+
+VSL anti-patterns:
+- Do not show proof before the audience understands the mechanism.
+- Do not use countdowns without real deadlines.
+- Do not turn the whole ad into cards. Use overlays as beats in an argument.
+- Every overlay must answer: hook, intensify pain, reveal mechanism, prove, reduce risk, or close.
