@@ -5,7 +5,8 @@
 - You add `dr/cta-button-pulse` to hook or proof beats. It belongs only on the CTA beat.
 - You use `hf/cinematic-zoom` twice. It's the climax transition. Use it once, at the biggest emotional pivot (usually agitate → mechanism).
 - You pile 5 blocks on one beat. Max 3 overlays per beat or it looks cluttered.
-- You leave overlay props empty or with placeholder text. Fill every field with real brand data.
+- You leave required overlay props empty or with placeholder text. Fill real content; only leave optional fields empty when the block hides empty elements cleanly.
+- You set `xPercent`/`yPercent` while `position` is top/middle/bottom. Exact coordinates only matter when `position:"custom"`.
 - You skip `dr/fx-grain-overlay` and wonder why the ad looks flat. Add it to hook and CTA beats.
 - You add `hf/instagram-follow` for brands with under 10K followers. Weak follower count destroys trust instead of building it. Only use if the number is impressive.
 - You add `hf/instagram-follow` on product-page CTA ads. If the viewer is going to a shop link, showing "follow us" confuses the call to action.
@@ -24,6 +25,10 @@ Use `dr_blocks_list` as source of truth. The tool returns `propFields`; fill eve
 | `mutedTextColor` | 65-80% contrast | Eyebrows, notes, attribution. |
 | `opacity` | `0.86` to `1` | Lower than 0.80 usually weakens readability. |
 | `scale` | `0.85` to `1.2` | Size the whole block for 9:16 instead of stuffing text. |
+| `position` | `top`, `middle`, `bottom`, `custom` | Use custom only when exact `xPercent`/`yPercent` placement is needed. |
+| `fontFamily` | selector values from `dr_blocks_list` | Keep one font identity across the ad. |
+| `introAnimation` / `outroAnimation` | `fade`, `rise`, `pop`, `fall`, `shrink`, etc. | Whole overlay motion. |
+| `internalAnimation` | `stagger`, `pop`, `none` | Motion inside the overlay, not the card itself. |
 
 ### Style Presets
 
@@ -106,6 +111,9 @@ Each block has a visual behavior. Know what it looks like before choosing it.
 | social proof | `hf/tiktok-follow` | `handle`, `followers`, `displayName` | TikTok-style follow prompt: username + follower count, red Follow button. Same native-app feel as the instagram block. | Only if 10K+ followers AND goal is social follow |
 | proof | `dr/social-proof-reviews` | `quote`, `name`, `stars` | White card with 5 filled stars, verbatim quote in bold, name below in lighter weight. Clean review format — no clutter. | Real verbatim quote |
 | proof | `hf/yt-lower-third` | `channelName`, `subscribers` | YouTube-style lower-third: channel logo area + name + subscriber count in a horizontal bar. Recognizable as a YouTube-credibility signal. | If YouTube-style proof |
+| proof | `hf/x-post` | `displayName`, `handle`, `body`, `timestamp`, `replyCount`, `repostCount`, `likeCount`, `viewCount`, `avatarUrl` | Native X/Twitter-style post card with engagement metrics and like pop. | Public creator/customer proof |
+| proof | `hf/reddit-post` | `subreddit`, `author`, `title`, `body`, `upvotes`, `comments` | Reddit-style community post card with upvote pop. | Community validation and objection proof |
+| value/data | `hf/apple-money-count` | `label`, `startAmount`, `endAmount`, `prefix`, `caption` | Apple-style counter from start to target amount, green flash, money burst. | Savings, revenue, bonuses, value math |
 | mechanism/value_prop | `dr/solution-product-reveal` | `title`, `bullet1`, `bullet2`, `bullet3` | Product card with a title line and 3 bullet points appearing in stagger. Each bullet animates in with a short delay. Feels like a feature reveal. | 3 benefit bullets |
 | cta | `dr/cta-button-pulse` | `cta`, `offer` | Rounded button with CTA text, pulsing glow ring expanding outward on loop. Offer text below in smaller size. Hard to ignore. | **Required on CTA** |
 | hook + cta | `dr/fx-grain-overlay` | (no props) | Subtle film grain noise over the full frame on every frame. Not visible as a "thing" — it makes the scene feel like footage, not a rendered ad. | Always add to hook and CTA beats |
@@ -348,6 +356,9 @@ These are agent-friendly DR-native overlays. They all accept the standard stylin
 | testimonial DM | `dr/dm-screenshot` | Native message screenshot for private proof or creator replies | `sender`, `message1`, `message2`, `reply`, `avatarUrl`, `blurIdentity`, style props |
 | real urgency | `dr/scarcity-countdown` | Clean typographic countdown for true deadlines | `label`, `time`, style props |
 | reaction / pattern interrupt | `dr/punctuation-pop` | Huge `?`, `!`, or `?!` in the middle of the 9:16 frame | `symbol`, `caption`, style props |
+| native public proof | `hf/x-post` | Public social post proof with X-style engagement | `displayName`, `handle`, `body`, `timestamp`, `replyCount`, `repostCount`, `likeCount`, `viewCount`, `avatarUrl`, style props |
+| community proof | `hf/reddit-post` | Reddit-style thread proof or objection handling | `subreddit`, `author`, `title`, `body`, `upvotes`, `comments`, style props |
+| finance/value result | `hf/apple-money-count` | Count up a concrete savings/revenue/value number | `label`, `startAmount`, `endAmount`, `prefix`, `caption`, style props |
 
 Placement recipes:
 - Review in the middle: `dr/social-proof-reviews` with `position:"middle"`, `widthPercent:"78"`, `headlineSizePx:"44"`, `backgroundColor:"rgba(255,248,242,.94)"`.
@@ -385,6 +396,9 @@ Use these as future-ready patterns when choosing or requesting overlays. They fe
 
 Selection rules:
 - If VO says “someone commented”, use `dr/instagram-comment` or `dr/tiktok-comment`, not a generic review card.
+- If VO cites a public tweet/X post, use `hf/x-post`.
+- If VO cites a forum thread, niche community, or "people on Reddit", use `hf/reddit-post`.
+- If VO makes a big savings/revenue/value claim, use `hf/apple-money-count` or `dr/receipt-breakdown`; use `apple-money-count` for one big number and `receipt-breakdown` for line items.
 - If VO explains a process, use `dr/step-path-goal`, not bullets.
 - If VO lists benefits, use `dr/animated-bullet-list`.
 - If VO reveals the mechanism, use `dr/solution-product-reveal`.
@@ -399,10 +413,10 @@ Selection rules:
 VSL overlays should support argument flow, not decorate randomly:
 
 - **Open loop:** `dr/search-query-overlay`, `dr/punctuation-pop`, or `dr/hook-question-zoom` for the first unresolved question.
-- **Pain proof:** `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, or `dr/problem-split-compare` when showing evidence the problem is real.
+- **Pain proof:** `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `hf/reddit-post`, `hf/x-post`, or `dr/problem-split-compare` when showing evidence the problem is real.
 - **Mechanism:** `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism, `dr/animated-bullet-list` only for compact benefits.
-- **Proof escalation:** `dr/proof-ticker` for multiple proof points, `dr/social-proof-reviews` for one verbatim testimonial.
-- **Value justification:** `dr/receipt-breakdown` before the offer to explain price/value.
+- **Proof escalation:** `dr/proof-ticker` for multiple proof points, `dr/social-proof-reviews` for one verbatim testimonial, `hf/x-post`/`hf/reddit-post` for native public proof.
+- **Value justification:** `dr/receipt-breakdown` before the offer to explain price/value, or `hf/apple-money-count` for one big financial result.
 - **Close:** `dr/scarcity-countdown` as a clean timer plus `dr/cta-button-pulse` when urgency is real; otherwise only use CTA.
 
 VSL anti-patterns:

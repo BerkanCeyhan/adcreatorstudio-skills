@@ -106,10 +106,10 @@ Use these rules for DR/VSL video structure:
 
 When the ad is VSL-like, overlays should support the persuasion argument:
 - Open loop / question: `dr/search-query-overlay`, `dr/hook-question-zoom`, `dr/punctuation-pop`.
-- Problem proof: `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `dr/problem-split-compare`.
+- Problem proof: `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `dr/problem-split-compare`, `hf/reddit-post`, `hf/x-post`.
 - Mechanism: `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism.
-- Proof escalation: `dr/proof-ticker` for multiple short proof points, `dr/social-proof-reviews` for a verbatim quote.
-- Value justification: `dr/receipt-breakdown` for price, bonuses, savings, or time saved.
+- Proof escalation: `dr/proof-ticker` for multiple short proof points, `dr/social-proof-reviews` for a verbatim quote, `hf/reddit-post` for community proof, `hf/x-post` for public creator/customer proof.
+- Value justification: `dr/receipt-breakdown` for price, bonuses, savings, or time saved; `hf/apple-money-count` for a big money/result counter.
 - Close: `dr/scarcity-countdown` only for real urgency, plus `dr/cta-button-pulse`.
 
 
@@ -334,6 +334,10 @@ Each overlay must answer: **"What does this block DO for this specific moment?"*
 | `mutedTextColor` | Eyebrow/supporting text. Lower contrast but still readable. |
 | `opacity` | Overall overlay opacity. Use `0.86-0.94` for glass, `1` for CTA/proof. |
 | `scale` | Whole overlay size. Use `0.85-0.95` for lower-thirds, `1.05-1.2` for hook emphasis. |
+| `position` | Use `top`, `middle`, or `bottom` first. Use `custom` only when setting exact `xPercent`/`yPercent`. |
+| `fontFamily` | Use the selector value returned by `dr_blocks_list`; do not invent CSS stacks. |
+| `introAnimation` / `outroAnimation` | Whole overlay entrance/exit. |
+| `internalAnimation` | Motion inside the overlay, such as bullet stagger, like pop, upvote pop, or money burst. |
 
 Good overlay presets:
 
@@ -391,6 +395,8 @@ Bad practice:
 | Hook or CTA | Premium cinematic feel | `dr/fx-grain-overlay` | When the ad has a premium/lifestyle tone |
 | Proof (social follow) | Show community size as trust signal | `hf/instagram-follow` or `hf/tiktok-follow` | **Only** if goal = social follow OR 10K+ followers |
 | Proof (testimonial) | Show specific social proof | `dr/social-proof-reviews` | Only with a real verbatim quote |
+| Proof (public post) | Show native public proof | `hf/x-post` or `hf/reddit-post` | Use real post text/metrics or clearly paraphrased proof |
+| Value/money result | Make a financial outcome feel large | `hf/apple-money-count` | Use real savings/revenue/value math, not fake earnings |
 
 **Overlay planning process:**
 1. List each beat
@@ -411,7 +417,7 @@ dr_overlay_add({
 })
 ```
 
-Fill ALL props with real brand data from the questionnaire. Never use placeholder values. Every prop field the block exposes must be populated — an empty or default-placeholder prop renders broken in the editor.
+Fill required content props with real brand data from the questionnaire. Never use placeholder values. Optional props can be intentionally empty only when the overlay supports hiding that element, for example avatar URL, caption, eyebrow, kicker, or optional metrics.
 
 ---
 
@@ -520,7 +526,7 @@ Generic placeholders = bad ad. Specificity = conversion.
 - Not adding audio tags. Every beat should have 1–2 Eleven v3 audio tags where they're contextually earned. Read voice.md for which tags fit which beats.
 - Selecting a voice without checking for the user's own cloned voice first. Cloned voice = highest authenticity for UGC. It must be offered before any other option.
 - Adding more transitions than the beat count warrants. ≤15s = 1 max. ≤25s = 2 max. Short videos with 3 transitions feel choppy, not cinematic.
-- Leaving any overlay prop unfilled. Every exposed prop on a block must have real data — empty props = broken overlay in editor.
+- Leaving required overlay props unfilled. Optional props may be empty only when the block hides that element cleanly.
 
 ---
 

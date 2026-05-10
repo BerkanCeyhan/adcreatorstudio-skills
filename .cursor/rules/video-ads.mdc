@@ -3,6 +3,6 @@ description: "AdCreator Studio — Video Ads skill. Trigger when user asks to cr
 alwaysApply: false
 ---
 
-When the user asks to create a video ad or says "use adcreator", load and follow the workflow in `.cursor/skills/video-ads/SKILL.md`.
+When the user asks to create a video ad or says "use adcreator", load and follow the workflow in `skills/video-ads/SKILL.md`.
 
 Requires AdCreator Studio MCP connection. Setup: https://adcreatorstudio.com/settings/api-access
