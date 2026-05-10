@@ -1,9 +1,11 @@
 name: Sync skill files to harness directories
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'skills/**'
+      - '.github/workflows/sync-skills.yml'
     branches: [main]
 
 permissions:
