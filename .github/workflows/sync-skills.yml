@@ -6,6 +6,9 @@ on:
       - 'skills/**'
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
