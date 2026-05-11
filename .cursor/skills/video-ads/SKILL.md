@@ -270,7 +270,43 @@ dr_broll_suggest({ beat_type: "problem", vo_text: "still breaking out every morn
 1. User's own uploaded assets (`category: "library"`) — always first. If the user provided B-Roll URLs or answered `own_broll_available: true` in the questionnaire, assign those beats before considering stock.
 2. Unsplash / Pexels stock — acceptable for agitate/context beats only.
 
-Never use stock for mechanism or proof beats — those require real product footage. Report URLs to user — they assign in editor.
+Never use stock for mechanism or proof beats — those require real product footage.
+
+Assign base beat media with `dr_beat_broll_assign`. This keeps the core rule intact: one beat has one primary background video/image.
+
+```typescript
+dr_beat_broll_assign({
+  video_id: "...",
+  beat_id: "<mechanism beat id>",
+  media_url: "https://...",
+  thumb_url: "https://...",
+  media_type: "video"
+})
+```
+
+Use `dr_media_clip_add` only for extra cutaways inside an already planned beat: product close-ups, proof screenshots, packshots, jump-cut inserts, or quick context shots. These media clips sit above base beat media, below captions/overlays/transitions, and are muted.
+
+```typescript
+dr_media_clip_add({
+  video_id: "...",
+  media_url: "https://...",
+  thumb_url: "https://...",
+  media_type: "video",
+  timing: { mode: "beat-relative", beat_id: "<mechanism beat id>", at_ms: 1800, duration_ms: 1400 },
+  source_in_ms: 1200,
+  source_out_ms: 2600,
+  playback_rate: 1,
+  track_index: 1,
+  fit: "cover",
+  animation: "zoom_in"
+})
+```
+
+Cutaway discipline:
+- Use base B-Roll for the main beat image.
+- Use media clips for short inserts, not for rewriting the beat structure.
+- Usually 0-1 cutaway in a short beat, 1-3 in a long mechanism/proof beat.
+- No media-to-media transitions yet. Use hard cuts inside beats. Beat transitions still belong between beats.
 
 ### Sound + Audio Design
 
@@ -302,7 +338,8 @@ Keep SFX volume subtle: `0.2-0.45`. Use negative `offsetMs` (`-80` to `-40`) for
 ### Editing Moves Beyond Overlays
 
 Use these when the VO has a punchline or statement:
-- **Punch zoom:** on a strong claim, choose/ask user to make B-Roll slightly zoomed-in before the beat, then cut or transition into a wider/normal framing. Use for hook and agitate statements.
+- **Punch zoom:** on a strong claim, add a short `dr_media_clip_add` cutaway with `animation: "zoom_in"` or trim the source to the punch moment. Use for hook and agitate statements.
+- **Cutaway insert:** when a beat needs more visual proof than one background clip can carry, add a 900-1800ms media clip at the spoken claim. Keep it muted and let VO carry the argument.
 - **Blur-to-solid emphasis:** when footage is too busy for text, use a darker/glass overlay style or transition through `hf/color-dip` / `hf/blur-through` into a cleaner scene.
 - **Statement hit:** pair a punch word overlay (`dr/agitation-word-highlight`) with a fast transition (`hf/flash-cut` or `hf/whip-pan`) only once or twice. Too many hits feel noisy.
 - **Premium pause:** for luxury/finance/wellness, use `hf/focus-pull`, `hf/blur-crossfade`, glassmorphism, grain, and slower entrance timing. Do not use glitch/flash.
@@ -471,9 +508,10 @@ Video ready for review: <editorUrl>
 
 Built:
 - [X] beats with voiceover (total ~Xs)
+- [X] base B-Roll assignments
+- [X] extra media cutaways, if useful
 - [X] overlays
 - [X] transitions
-- B-Roll: needs assignment in editor (paste URLs from step 4)
 
 Ready to render? Confirm and I'll start it.
 ```

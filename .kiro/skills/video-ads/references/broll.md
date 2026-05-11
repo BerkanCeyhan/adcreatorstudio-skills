@@ -99,7 +99,41 @@ Returns:
 - `source: "ai_pick"` = from own library (highest priority — always show first)
 - Results ranked: library → unsplash → pexels
 
-**Report to user:** List the URLs with source labels. They paste into editor. You don't call a "set B-Roll" tool — the user assigns in the editor.
+## Base B-Roll vs Extra Cutaways
+
+Use two different media tools:
+
+1. `dr_beat_broll_assign` sets the main media for a beat. This is the base background layer. Keep one primary B-Roll assignment per beat.
+2. `dr_media_clip_add` adds extra muted media clips inside the beat. Use this for cutaways, close-ups, proof inserts, screenshots, packshots, or quick visual punctuation after the base B-Roll is already set.
+
+Base B-Roll should carry the beat's main context. Extra cutaways should be short: usually 900-1800ms, placed on a voiced claim or product/proof detail. Do not add extra clips just to create motion; each one must clarify or intensify the argument.
+
+There are no media-to-media transitions yet. Treat extra clips as hard cuts inside the beat. Beat transitions still happen between beats through `dr_transition_add`.
+
+```typescript
+dr_beat_broll_assign({
+  video_id: "...",
+  beat_id: "<beat id>",
+  media_url: "https://...",
+  thumb_url: "https://...",
+  media_type: "video"
+})
+
+dr_media_clip_add({
+  video_id: "...",
+  media_url: "https://...",
+  thumb_url: "https://...",
+  media_type: "video",
+  timing: { mode: "beat-relative", beat_id: "<beat id>", at_ms: 1400, duration_ms: 1200 },
+  source_in_ms: 800,
+  source_out_ms: 2000,
+  track_index: 1,
+  fit: "cover",
+  animation: "zoom_in"
+})
+```
+
+**Report to user:** Tell them which base B-Roll was assigned and which extra cutaways were added, with URLs/source labels.
 
 ---
 
