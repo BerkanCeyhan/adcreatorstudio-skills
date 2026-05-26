@@ -13,7 +13,7 @@ Three timing modes for `dr_overlay_add`, `dr_overlay_update`, and `dr_media_clip
 
 ## Beat-Relative Timing
 
-Offset from the **start of a beat**. Best for most overlays — stays in sync if beat duration changes.
+Offset from the **start of a beat**. Best for decorative or structural overlays after TTS exists. If beat duration changes, run `dr_video_recalculate_timings`.
 
 ```typescript
 timing: {
@@ -56,7 +56,13 @@ timing: {
 - Product name / mechanism name (first mention)
 - Price or discount ("FREE", "25%", "nur heute")
 - Key claim word (the punchline word)
+- Brand name
+- Any quoted testimonial phrase
 - Punctuation-pop or word-highlight overlays that should sync frame-perfectly
+
+Default to word-anchor for content-bound overlays. Beat-relative is for decorative/structural overlays only.
+
+Drift example: estimated beat is 10s, real TTS at 1.15x is 8.2s. A beat-relative 9s overlay overruns/clips; a word-anchor overlay stays glued to the spoken product name or claim word.
 
 **Example — CTA price reveal:**
 ```typescript
@@ -109,8 +115,8 @@ Avoid for content overlays — beat durations change when TTS regenerates, makin
 
 | Situation | Mode |
 |---|---|
-| Most overlays (reviews, proof, product) | `beat-relative` |
-| Sync to a specific word (price, name, punchline) | `word-anchor` |
+| Product name, brand name, price, claim, quote phrase | `word-anchor` |
+| Decorative/structural overlays after TTS exists | `beat-relative` |
 | Full-timeline FX grain | `absolute` |
 | Transitions (set by dr_transition_add automatically) | `absolute` |
 

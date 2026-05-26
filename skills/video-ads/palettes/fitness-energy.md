@@ -15,10 +15,10 @@ Supplements, workout gear, sports performance. Male-skewed 20–40.
 ## Block Style Suggestions
 
 - `dr/hook-bigtext-pop`: Black bg, white headline, red kicker
-- `hf/instagram-follow`: Dark card, red accent border
+- `dr/tiktok-comment`: Dark card, red accent border
 - `dr/cta-button-pulse`: Red button (#E63A2E), white text
 - `dr/agitation-word-highlight`: Orange highlight on pain word
-- `dr/solution-product-reveal`: Dark card, orange accent bullets
+- `dr/animated-bullet-list`: Dark card, orange accent bullets
 
 ## Caption Style
 `highlight` — word-by-word with red accent highlight

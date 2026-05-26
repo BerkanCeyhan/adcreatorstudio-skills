@@ -83,31 +83,33 @@ dr_overlay_add({
 })
 ```
 
-**mechanism beat** — `dr/solution-product-reveal`
+**mechanism beat** — `dr/animated-bullet-list`
 ```typescript
 dr_overlay_add({
   video_id: "...",
-  block_id: "dr/solution-product-reveal",
+  block_id: "dr/animated-bullet-list",
   props: {
     title: "Cellular Sync Protocol",
-    bullet1: "Replenishes ATP during sleep",
-    bullet2: "Triggers real muscle growth",
-    bullet3: "No stimulants. No crash."
+    item1: "Replenishes ATP during sleep",
+    item2: "Triggers real muscle growth",
+    item3: "No stimulants. No crash.",
+    markerStyle: "checks"
   },
   timing: { mode: "beat-relative", beat_id: "<mechanism-id>", at_ms: 800, duration_ms: 5000 },
   track_index: 1
 })
 ```
 
-**proof beat** — `hf/instagram-follow`
+**proof beat** — `dr/tiktok-comment`
 ```typescript
 dr_overlay_add({
   video_id: "...",
-  block_id: "hf/instagram-follow",
+  block_id: "dr/tiktok-comment",
   props: {
-    handle: "@recoverpro",
-    followers: "287K followers",
-    displayName: "RecoverPro"
+    username: "@recoverpro",
+    comment: "Two weeks in and recovery feels completely different.",
+    meta: "Creator reply",
+    blurIdentity: "false"
   },
   timing: { mode: "beat-relative", beat_id: "<proof-id>", at_ms: 300, duration_ms: 3500 },
   track_index: 1
@@ -122,17 +124,6 @@ dr_overlay_add({
   props: { cta: "Link in bio", offer: "Free shaker — 48h only" },
   timing: { mode: "beat-relative", beat_id: "<cta-id>", at_ms: 200, duration_ms: 3000 },
   track_index: 1
-})
-```
-
-**cta beat** — `dr/fx-grain-overlay`
-```typescript
-dr_overlay_add({
-  video_id: "...",
-  block_id: "dr/fx-grain-overlay",
-  props: {},
-  timing: { mode: "beat-relative", beat_id: "<cta-id>", at_ms: 0, duration_ms: 3500 },
-  track_index: 2
 })
 ```
 

@@ -15,10 +15,10 @@ High-ticket programs, financial services, business coaching. Any gender, 30–55
 ## Block Style Suggestions
 
 - `dr/hook-bigtext-pop`: Navy bg, warm white headline, gold kicker
-- `hf/instagram-follow`: Navy card, gold accent line at top
+- `dr/instagram-comment`: Navy card, gold accent line at top
 - `dr/cta-button-pulse`: Gold button (#C9A84C), dark text
-- `dr/social-proof-reviews`: Dark card, gold stars, warm white quote
-- `dr/solution-product-reveal`: Navy card, gold accent bullets
+- `dr/receipt-breakdown`: Dark card, gold totals, warm white labels
+- `dr/animated-bullet-list`: Navy card, gold accent bullets
 
 ## Caption Style
 `classic` — clean, readable, no heavy styling

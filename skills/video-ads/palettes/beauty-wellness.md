@@ -15,9 +15,9 @@ Skincare, supplements, personal care, mental wellness. Female-skewed or gender-n
 ## Block Style Suggestions
 
 - `dr/hook-bigtext-pop`: Light bg (#FAF8F5), dark text, accent warm kicker
-- `hf/instagram-follow`: Dark variant (#1A1512), blush accent border
+- `dr/instagram-comment`: Dark variant (#1A1512), blush accent border
 - `dr/cta-button-pulse`: Warm accent (#C4875A) button, light text
-- `dr/solution-product-reveal`: Clean white card, warm accent bullets
+- `dr/animated-bullet-list`: Clean white card, warm accent bullets
 
 ## Caption Style
 `pop` — bold word-by-word, warm accent highlight
