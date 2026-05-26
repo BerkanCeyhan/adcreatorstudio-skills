@@ -11,7 +11,7 @@ description: >
 
 # Video Ads — MCP Workflow
 
-DR Videos are 9:16 short-form video ads (15–45s) built from **beats** (script sections), each with voiceover, B-Roll, and optional overlay blocks.
+DR Videos are 9:16 short-form video ads built from **beats** (script sections), each with voiceover, B-Roll, and optional overlay blocks. Common length: 15–90s depending on script complexity.
 
 ---
 
@@ -106,14 +106,16 @@ Design rules:
 
 **Language:** Match target market. German product = German script, colloquial not formal.
 
-### Templates
+### Templates (starting suggestions — not hard constraints)
 
-| Template | Duration | Beat sequence |
-|---|---|---|
-| `classic_dr` | 45s / 7 beats | hook → problem → agitate → why_others_fail → mechanism → proof → cta |
-| `problem_solution` | 30s / 6 beats | hook → problem → value_prop → proof → objection → cta |
-| `ugc_style` | 25s / 5 beats | hook → problem → mechanism → proof → cta |
-| `short_hook` | 15s / 3 beats | hook → mechanism → cta |
+Templates seed a default beat structure. **Add or remove beats freely based on script structure.** If the user's script has 9 natural emotional units, use 9 beats. Do not merge beats to fit a template.
+
+| Template | Starting beat sequence |
+|---|---|
+| `classic_dr` | hook → problem → agitate → why_others_fail → mechanism → proof → cta |
+| `problem_solution` | hook → problem → value_prop → proof → objection → cta |
+| `ugc_style` | hook → problem → mechanism → proof → cta |
+| `short_hook` | hook → mechanism → cta |
 
 ### Script Process
 
@@ -172,65 +174,86 @@ Run `dr_beat_tts` for each beat ID first. If TTS fails (model bug, quota, voice 
 
 ## Step 4 — B-Roll
 
-Call `dr_broll_suggest` per beat. See [references/broll.md](references/broll.md) for strategy and priority.
+Read [references/broll.md](references/broll.md) and [references/assets.md](references/assets.md) for strategy and priority.
 
-Priority: user's own library → curated library → Unsplash/Pexels. Never stock for mechanism/proof beats.
+**Asset gap detection:** Before calling `dr_broll_suggest`, check `dr_assets_list` for user-uploaded footage. For mechanism and proof beats, if no matching product asset exists, offer the user a direct upload link:
 
 ```typescript
+dr_assets_list({ video_id })  // check what's available
+
+// If no product closeup for mechanism beat:
+// "I'd love a closeup of [product] for the mechanism beat. Upload it here, or I'll use Pexels stock."
+// dr_assets_upload_link({ project_id, slot_label: "Product closeup", hint: "Mechanism beat — product detail shot" })
+```
+
+Priority: user's own library → curated library → Pexels/Unsplash. Never stock for mechanism/proof beats if product assets exist.
+
+```typescript
+dr_broll_suggest({ beat_type: "mechanism", vo_text: "...", locale: "de-DE" })
+// locale: always pass the VO language locale to get locale-correct Pexels results
+
 dr_beat_broll_assign({ video_id, beat_id, media_url, thumb_url, media_type: "video" })
 ```
 
-For extra cutaways inside a beat (close-ups, proof inserts, jump-cuts), use `dr_media_clip_add`. These sit above base B-Roll, below captions/overlays.
+For extra cutaways inside a beat (close-ups, proof inserts, jump-cuts), use `dr_media_clip_add`. These sit above base B-Roll, below captions/overlays. See [references/broll.md](references/broll.md) for `fill_policy` and animation rules.
 
 ---
 
 ## Step 5 — Overlay Blocks
 
-Read [references/blocks.md](references/blocks.md) before adding overlays. For timing details, read [references/timing.md](references/timing.md).
+Read [references/blocks.md](references/blocks.md) before adding overlays. For timing details, read [references/timing.md](references/timing.md). For routing suggestions by beat purpose, read [references/overlays.md](references/overlays.md).
 
-Call `dr_blocks_list` first. Only use block IDs returned by `dr_blocks_list`. Server filters hidden blocks. Do not invent or recall block IDs from prior conversations; registry can change.
+### Two-Step Block Discovery (mandatory)
 
-**Block defaults are applied automatically** — pass only props you want to override:
+**Never invent block IDs. Never call `dr_blocks_list()` without `for_beat_type`.**
 
 ```typescript
-// Minimal: defaults handle style; you only pass content + brand color
+// Step 1: discover blocks ranked for this beat
+dr_blocks_list({ for_beat_type: "proof" })
+// → slim list with id, label, recommendedFor, moodTags, intensityLevel
+
+// Step 2: for each candidate you want to use — fetch full schema
+dr_block_get("dr/instagram-comment")
+// → defaultProps, propFields, styleVariants
+
+// Step 3: compose overlay with palette from Visual Director Contract
 dr_overlay_add({
   video_id: "...",
-  block_id: "dr/hook-bigtext-pop",
-  props: { headline: "Your skin barrier is broken.", accentColor: "#e22c3e" },
-  timing: { mode: "beat-relative", beat_id: "<hook beat id>", at_ms: 0, duration_ms: 3500 },
+  block_id: "dr/instagram-comment",
+  props: {
+    username: "@customer",
+    comment: "This literally changed everything for me.",
+    // S3: ALWAYS pass palette from Visual Director Contract:
+    accentColor: "#e85d04",
+    backgroundColor: "#fff8f2",
+    textColor: "#191410",
+  },
+  timing: { mode: "beat-relative", beat_id: "<proof beat id>", at_ms: 0, duration_ms: 4200 },
   track_index: 1,
-  sound_effect: { presetId: "soft-hit", volume: 0.30, offsetMs: 0 }
 })
 ```
 
-To sync an overlay to a specific spoken word (product name, price, key phrase), use word-anchor timing. Word indices come from `caption_words` in `dr_video_get`:
+### Visual Director Contract — Color Rule (non-negotiable)
+
+Every `dr_overlay_add` call **MUST** pass `accentColor`, `backgroundColor`, and `textColor` from the active Visual Director Contract palette. Server defaults are fine structurally but won't match the brand palette. Override them every time.
+
+### Word-Anchor Timing
+
+To sync an overlay to a specific spoken word (product name, price, claim word), use word-anchor mode. Word indices come from `caption_words` in `dr_video_get`:
 
 ```typescript
 dr_overlay_add({
   video_id: "...",
   block_id: "dr/punctuation-pop",
-  props: { text: "FREE" },
+  props: { symbol: "!", accentColor: "#e85d04", backgroundColor: "rgba(10,10,10,.72)", textColor: "#fff" },
   timing: { mode: "word-anchor", beat_id: "<cta beat id>", word_index: 4, duration_ms: 1800 },
   track_index: 2
 })
 ```
 
-### VSL Overlay Logic
+### Overlay Variety
 
-| Moment | Block | Condition |
-|---|---|---|
-| Hook | `dr/hook-bigtext-pop` | Always |
-| Mechanism / value | `dr/animated-bullet-list` | Product has clear bullet benefits |
-| CTA | `dr/cta-button-pulse` | Always on CTA beat |
-| Word punch | `dr/punctuation-pop` or `dr/agitation-word-highlight` | Product name, price, claim word; use word-anchor |
-| Social proof (comment/quote) | `dr/instagram-comment` or `dr/tiktok-comment` | Real comment or testimonial only |
-| Money / savings | `dr/receipt-breakdown` | Real value math only |
-| Scarcity | `dr/scarcity-countdown` | Real urgency only |
-
-If a block in this table is not returned by `dr_blocks_list`, do not use it.
-
-Max 3 overlays per beat. Most beats: 0–1.
+Aim for visual variety across beats. Vary block choice per beat purpose — do not repeat the same block more than twice. Check `dr_video_lint` for `low_overlay_variety` warnings and rebalance with alternatives from [references/overlays.md](references/overlays.md).
 
 For full styling props, style presets, position rules, and block catalog: [references/blocks.md](references/blocks.md).
 
@@ -238,7 +261,7 @@ For full styling props, style presets, position rules, and block catalog: [refer
 
 ## Step 6 — Transitions
 
-Add transitions after overlays. Transitions serve **emotional pivots** — find the 2–3 real shifts in viewer state, then choose a matching transition.
+Add transitions after overlays. Transitions serve **emotional pivots** — find the real shifts in viewer state, then choose a matching transition. Use the energy routing table in [references/overlays.md](references/overlays.md) to pick the right family.
 
 ```typescript
 dr_transition_add({
@@ -250,15 +273,15 @@ dr_transition_add({
 })
 ```
 
-| Emotional shift | Transition |
+| Emotional shift | Suggested transition |
 |---|---|
 | Hook → Problem ("that's me") | `hf/flash-through-white` |
 | Problem → Agitate (pain deepens) | `hf/whip-pan` |
-| Stuck → Revelation (the turn) | `hf/cinematic-zoom` — use max **once** |
+| Stuck → Revelation (the turn) | `hf/cinematic-zoom` — use max **once** as the climax |
 | Mechanism → Proof (belief builds) | `hf/crossfade` |
 | Proof → CTA (exhale into the ask) | `hf/blur-through` |
 
-Limits: ≤15s = 1 transition max. ≤25s = 2 max. Never adjacent high-energy transitions.
+Pick ONE primary transition family per video + ONE accent at the emotional climax. Avoid adjacent high-energy transitions (flash + whip-pan in sequence = chaos).
 
 For full transition catalog: [references/blocks.md](references/blocks.md).
 
@@ -319,18 +342,19 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 ## Non-Negotiable Rules
 
 - Never render without explicit user confirmation
-- VO text must stay within beat word count (timing breaks otherwise)
-- `hf/cinematic-zoom` max once per ad — it is the climax
-- `dr/cta-button-pulse` only on CTA beat
-- Max 3 overlays per beat
+- `hf/cinematic-zoom` max once per ad — it is the climax; use as accent transition only
+- `dr/cta-button-pulse` always on CTA beat
 - Name the mechanism, never the product, in the mechanism beat
-- Mechanism/proof beats require own B-Roll — never stock
-- `dr_beat_tts` must run for every beat
+- Mechanism/proof beats: prefer user's own B-Roll or library — stock only as fallback
+- `dr_beat_tts` must run for every beat before adding overlays
 - TTS calls are sequential — never parallel
-- Only use block IDs returned by `dr_blocks_list`
+- Only use block IDs returned by `dr_blocks_list` — never invent IDs from memory
+- Always call `dr_block_get(block_id)` before `dr_overlay_add` to read the full schema
+- Every `dr_overlay_add` MUST pass `accentColor`, `backgroundColor`, `textColor` from the Visual Director Contract
 - Run `dr_video_lint` before render and fix every error
-- Block style defaults are fine as-is; only fill required content props with real data
 - Always get IDs from `dr_video_get` or `dr_overlay_list` before update/remove calls
+- For images in `dr_media_clip_add`: always set `animation` explicitly (use `ken_burns`, `zoom_in`, `pan_left`, or `zoom_out` — never leave as `none`)
+- For short video clips: set `fill_policy` to `loop` or `freeze_last` to prevent dead frames
 
 ---
 
@@ -350,13 +374,15 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 
 ## References (loaded on demand)
 
-- **[references/beats.md](references/beats.md)** — Word counts, timing, niche examples. Read before scripting.
-- **[references/copywriting.md](references/copywriting.md)** — DR formulas, hooks, mechanism naming, proof formats. Agent-fallback for script drafting; read "You Write This Wrong" section before starting.
+- **[references/beats.md](references/beats.md)** — Beat types, niche examples. Read before scripting.
+- **[references/copywriting.md](references/copywriting.md)** — DR formulas, hooks, mechanism naming, proof formats. Read "You Write This Wrong" section before starting.
 - **[references/blocks.md](references/blocks.md)** — Block catalog, overlay props, style presets, transition catalog. Read before Steps 5–6.
+- **[references/overlays.md](references/overlays.md)** — Routing tables: block suggestions by beat purpose + transition energy table. Read before Step 5.
 - **[references/timing.md](references/timing.md)** — Beat-relative, word-anchor, absolute timing with examples. Read when setting overlay timing.
 - **[references/script-input.md](references/script-input.md)** — How to parse a user-provided script into beats. Read when user already has a script.
 - **[references/iterating.md](references/iterating.md)** — Edit loop: update/remove overlays, transitions, beats, voice after creation. Read when user requests changes.
-- **[references/broll.md](references/broll.md)** — B-Roll strategy by beat, source priority. Read before Step 4.
+- **[references/broll.md](references/broll.md)** — B-Roll strategy, fill_policy, animation rules, locale search. Read before Step 4.
+- **[references/assets.md](references/assets.md)** — Asset library: how to check user uploads, request missing assets, understand auto-tags. Read before Step 4.
 - **[references/voice.md](references/voice.md)** — Voice selection, audio tags, TTS settings. Read before Step 2.
 - **[palettes/beauty-wellness.md](palettes/beauty-wellness.md)** — Pastel, clean, skin tones.
 - **[palettes/fitness-energy.md](palettes/fitness-energy.md)** — Bold, high-contrast, red/black.

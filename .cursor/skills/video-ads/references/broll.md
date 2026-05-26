@@ -71,44 +71,80 @@ For beats where the product isn't relevant (agitate, why_others_fail, objection)
 
 ## B-Roll API
 
+Always pass `locale` matching the VO language. Server LLM-rewrites the VO into concrete nouns for the correct language — do not prepend camera adjectives like "bold" or "dramatic".
+
 ```typescript
 dr_broll_suggest({
   beat_type: "problem",
-  vo_text: "still breaking out every morning even after washing twice..."
+  vo_text: "Immer noch Pickel trotz zweimal waschen jeden Morgen...",
+  locale: "de-DE"  // always pass — match VO language
 })
 ```
 
 Returns:
 ```json
 {
+  "keywords": "Gesicht waschen Pickel Haut",
+  "locale": "de-DE",
   "results": [
     {
       "id": "...",
       "media_type": "image" | "video",
       "media_url": "https://...",
       "thumb_url": "https://...",
-      "source": "ai_pick" | "unsplash" | "pexels",
+      "source": "media_library" | "library" | "unsplash" | "pexels",
       "title": "...",
       "reason": "..."
     }
-  ],
-  "keywords": "frustration stress skin breakout washing face"
+  ]
 }
 ```
 
-- `source: "ai_pick"` = from own library (highest priority — always show first)
-- Results ranked: library → unsplash → pexels
+- `source: "media_library"` = user's own uploads (highest priority — always pick first)
+- Results ranked: media_library → library → unsplash/pexels
+- Pexels returns up to 20 results re-ranked by locale-correct query — trust top result unless thumbnail clearly off
 
 ## Base B-Roll vs Extra Cutaways
 
 Use two different media tools:
 
-1. `dr_beat_broll_assign` sets the main media for a beat. This is the base background layer. Keep one primary B-Roll assignment per beat.
-2. `dr_media_clip_add` adds extra muted media clips inside the beat. Use this for cutaways, close-ups, proof inserts, screenshots, packshots, or quick visual punctuation after the base B-Roll is already set.
+1. `dr_beat_broll_assign` — sets the main background media for a beat. One per beat.
+2. `dr_media_clip_add` — adds extra muted cutaways inside the beat (close-ups, proof inserts, jump-cuts). Short: 900–1800ms each.
 
-Base B-Roll should carry the beat's main context. Extra cutaways should be short: usually 900-1800ms, placed on a voiced claim or product/proof detail. Do not add extra clips just to create motion; each one must clarify or intensify the argument.
+### Animation Rules (non-negotiable)
 
-There are no media-to-media transitions yet. Treat extra clips as hard cuts inside the beat. Beat transitions still happen between beats through `dr_transition_add`.
+**Images MUST have animation.** Never pass `animation: "none"` on an image clip unless intentional.
+
+Alternate between animation styles:
+```
+beat 0 (image) → ken_burns
+beat 1 (image) → zoom_in
+beat 2 (image) → pan_left
+beat 3 (image) → zoom_out
+(repeat)
+```
+
+Server auto-defaults image animation if you omit it, but explicit is better — pass it every time.
+
+### Fill Policy for Short Videos
+
+When a video clip source is shorter than the beat audio duration, set `fill_policy`:
+
+```typescript
+dr_media_clip_add({
+  ...,
+  media_type: "video",
+  timing: { mode: "beat-relative", beat_id: "...", at_ms: 0, duration_ms: 18000 },
+  source_duration_ms: 9000,   // tell server the source is 9s
+  fill_policy: "loop"         // loop | freeze_last | speed_down
+})
+```
+
+- `loop` — video loops seamlessly (default choice for lifestyle footage)
+- `freeze_last` — holds last frame (use for product shots at end of beat)
+- `speed_down` — slows video to fill duration (use when slight slow-mo enhances mood)
+
+`dr_video_lint` will warn `broll_too_short` if source < clip duration without a fill_policy set.
 
 ```typescript
 dr_beat_broll_assign({
@@ -123,13 +159,11 @@ dr_media_clip_add({
   video_id: "...",
   media_url: "https://...",
   thumb_url: "https://...",
-  media_type: "video",
+  media_type: "image",
   timing: { mode: "beat-relative", beat_id: "<beat id>", at_ms: 1400, duration_ms: 1200 },
-  source_in_ms: 800,
-  source_out_ms: 2000,
   track_index: 1,
   fit: "cover",
-  animation: "zoom_in"
+  animation: "zoom_in"   // always set on images
 })
 ```
 

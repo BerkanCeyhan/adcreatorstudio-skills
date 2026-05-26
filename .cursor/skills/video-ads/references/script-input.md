@@ -37,11 +37,11 @@ The user may provide the script in one of three formats:
 
 Segment the monologue into logical beats. Rules:
 - Each beat = one emotional or argumentative unit
-- Match available templates (`classic_dr`, `problem_solution`, `ugc_style`, `short_hook`)
-- Hook must be ≤8 words spoken (2.5 words/sec → ≤3.2s)
-- CTA must be ≤6 words
+- Use templates as starting structure only — **beat count follows the script**, not the template
+- If the script has 9 natural emotional units, use 9 beats. Never merge beats to fit a template.
+- Common range: 5–12 beats. Longer scripts (300+ words) naturally produce 8–10 beats.
 
-Calculate rough duration: word count ÷ 2.5 = seconds. Total should be 15–45s.
+Calculate rough duration: word count ÷ 2.5 = seconds per beat.
 
 **Show the proposed beat assignment to the user:**
 ```
@@ -53,7 +53,7 @@ Mechanism (≈8s): "Then I found out about ceramide bonding..."
 Proof (≈5s): "Over 800 people saw results in two weeks..."
 CTA (≈4s): "Get the starter kit — link below."
 
-Total: ~26s — ugc_style template.
+Total: ~26s — 5 beats.
 
 Any changes before I continue?
 ```
