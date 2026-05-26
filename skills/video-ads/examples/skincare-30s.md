@@ -68,44 +68,19 @@ dr_overlay_add({
 })
 ```
 
-**hook beat** — `dr/fx-grain-overlay`
+**proof beat** — `dr/instagram-comment`
 ```typescript
 dr_overlay_add({
   video_id: "...",
-  block_id: "dr/fx-grain-overlay",
-  props: {},
-  timing: { mode: "beat-relative", beat_id: "<hook-id>", at_ms: 0, duration_ms: 3000 },
-  track_index: 2
-})
-```
-
-**proof beat** — `hf/instagram-follow`
-```typescript
-dr_overlay_add({
-  video_id: "...",
-  block_id: "hf/instagram-follow",
+  block_id: "dr/instagram-comment",
   props: {
-    handle: "@balancedbarrierserum",
-    followers: "142K followers",
-    displayName: "Balanced Barrier"
+    username: "@emma",
+    comment: "Cleared my skin in twelve days. I've tried everything.",
+    meta: "Verified buyer",
+    blurIdentity: "true"
   },
   timing: { mode: "beat-relative", beat_id: "<proof-id>", at_ms: 500, duration_ms: 3500 },
   track_index: 1
-})
-```
-
-**proof beat** — `dr/social-proof-reviews`
-```typescript
-dr_overlay_add({
-  video_id: "...",
-  block_id: "dr/social-proof-reviews",
-  props: {
-    quote: "Cleared my skin in 12 days. I've tried everything.",
-    name: "Emma R.",
-    stars: 5
-  },
-  timing: { mode: "beat-relative", beat_id: "<proof-id>", at_ms: 800, duration_ms: 4000 },
-  track_index: 2
 })
 ```
 

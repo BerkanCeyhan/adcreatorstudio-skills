@@ -111,24 +111,16 @@ dr_overlay_add({
   sound_effect: { presetId: "soft-hit", volume: 0.30, offsetMs: 0 }
 })
 
-// Hook: grain overlay for premium texture
+// Mechanism: HCL bullet points
 dr_overlay_add({
   video_id,
-  block_id: "dr/fx-grain-overlay",
-  props: {},  // all defaults
-  timing: { mode: "beat-relative", beat_id: "<hook id>", at_ms: 0, duration_ms: 5000 },
-  track_index: 2
-})
-
-// Mechanism: product reveal with HCL bullet points
-dr_overlay_add({
-  video_id,
-  block_id: "dr/solution-product-reveal",
+  block_id: "dr/animated-bullet-list",
   props: {
     title: "Kreatin HCL",
-    bullet1: "Löst sich komplett auf",
-    bullet2: "Kein Blähbauch, kein aufgedunsenes Gesicht",
-    bullet3: "4 Kapseln statt 5 Gramm",
+    item1: "Löst sich komplett auf",
+    item2: "Kein Blähbauch, kein aufgedunsenes Gesicht",
+    item3: "Vier Kapseln statt fünf Gramm",
+    markerStyle: "checks",
     accentColor: "#ff2f2f"
   },
   timing: { mode: "beat-relative", beat_id: "<mechanism id>", at_ms: 1800, duration_ms: 4500 },
@@ -136,14 +128,15 @@ dr_overlay_add({
   sound_effect: { presetId: "pop-click", volume: 0.28, offsetMs: 0 }
 })
 
-// Proof: social proof badge
+// Proof: social proof comment
 dr_overlay_add({
   video_id,
-  block_id: "dr/social-proof-reviews",
+  block_id: "dr/instagram-comment",
   props: {
-    quote: "Endlich kein Blähbauch mehr. Direkt mehr Kraft nach zwei Wochen.",
-    name: "Verifizierter Käufer",
-    stars: "5 Sterne"
+    username: "@kunde",
+    comment: "Endlich kein Blähbauch mehr. Direkt mehr Kraft nach zwei Wochen.",
+    meta: "Verifizierter Käufer",
+    blurIdentity: "true"
   },
   timing: { mode: "beat-relative", beat_id: "<proof id>", at_ms: 500, duration_ms: 4000 },
   track_index: 1,

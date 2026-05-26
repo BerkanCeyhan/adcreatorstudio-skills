@@ -15,10 +15,10 @@ Productivity tools, software, developer tools, B2B. Gender-neutral, 28–45.
 ## Block Style Suggestions
 
 - `dr/hook-bigtext-pop`: Dark bg, white headline, electric blue kicker
-- `hf/macos-notification`: Use for problem beat — notification-style interrupt
+- `dr/search-query-overlay`: Use for problem beat — search-intent interrupt
 - `dr/cta-button-pulse`: Electric blue button, white text
-- `dr/solution-product-reveal`: Dark card, blue/green accent bullets
-- `hf/yt-lower-third`: For credibility/press proof
+- `dr/animated-bullet-list`: Dark card, blue/green accent bullets
+- `dr/receipt-breakdown`: For credibility/value proof
 
 ## Caption Style
 `pop` — clean, fast, matches tech aesthetic

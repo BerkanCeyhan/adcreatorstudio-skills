@@ -15,13 +15,13 @@ Gaming, music, youth brands, entertainment. Under-30, any gender.
 ## Block Style Suggestions
 
 - `dr/hook-bigtext-pop`: Black bg, white headline, purple gradient kicker
-- `hf/tiktok-follow`: Native TikTok style overlay
+- `dr/tiktok-comment`: Native TikTok style overlay
 - `dr/cta-button-pulse`: Purple button (#8B5CF6), white text
 - `dr/agitation-word-highlight`: Cyan highlight on key words
-- `dr/fx-grain-overlay`: Critical — adds authentic lo-fi texture
+- `dr/punctuation-pop`: Critical — adds authentic lo-fi interruption
 
 ## Caption Style
 `pop` — fast, bold, high energy
 
 ## Vibe
-Raw, loud, authentic. Not polished. The grain overlay is not optional — smooth video reads as corporate. Youth content lives in the imperfection. Stack bold overlays without apology.
+Raw, loud, authentic. Not polished. Use comment bubbles and punch words instead of smooth corporate cards. Stack bold overlays without apology, but only with blocks returned by `dr_blocks_list`.
