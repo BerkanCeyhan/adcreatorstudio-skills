@@ -134,3 +134,56 @@ Avoid for content overlays — beat durations change when TTS regenerates, makin
 | CTA button | Full CTA beat duration |
 | Scarcity countdown | 2000–4000 |
 | Grain FX overlay | Full beat or full video |
+
+---
+
+## Media Clip Animations
+
+Always pass `animation` explicitly on every `dr_media_clip_add` call. Never leave it as `"none"` for images.
+
+### Images
+Default to alternating animations based on beat index to create visual momentum:
+
+| Beat index (0-based) | Default animation |
+|---|---|
+| 0, 3, 6, … | `ken_burns` — slow zoom + lateral drift (most cinematic) |
+| 1, 4, 7, … | `zoom_in` — gentle push forward |
+| 2, 5, 8, … | `pan_left` — horizontal drift |
+
+Other options: `zoom_out`, `pan_right`. Use `"none"` only for intentional freeze frames.
+
+```typescript
+// Example — image clip with animation
+dr_media_clip_add({
+  video_id: "...",
+  beat_id: "<mechanism-beat>",
+  media_url: "https://...",
+  media_type: "image",
+  animation: "ken_burns",   // always set explicitly
+})
+```
+
+### Videos
+
+Videos play once by default. When source video is shorter than beat audio, set `fill_policy`:
+
+| Situation | fill_policy | Effect |
+|---|---|---|
+| Short loop footage (textures, patterns) | `loop` | Video loops seamlessly to fill beat |
+| Single-take footage | `freeze_last` | Video plays once, last frame holds |
+| Slightly short (< 20% gap) | `speed_down` | Playback rate reduced to fill duration |
+| Source matches beat duration | `none` (default) | No adjustment needed |
+
+```typescript
+// Example — looping short texture clip
+dr_media_clip_add({
+  video_id: "...",
+  beat_id: "<hook-beat>",
+  media_url: "https://...",
+  media_type: "video",
+  animation: "none",        // let video play naturally
+  fill_policy: "loop",      // loop to fill the beat
+})
+```
+
+**Lint warning:** `dr_video_lint` surfaces `broll_too_short` when source B-roll is shorter than beat audio. Fix by setting `fill_policy` or adding a cutaway media clip.
