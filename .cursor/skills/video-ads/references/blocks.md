@@ -15,9 +15,7 @@
 - `hf/cinematic-zoom` more than once — climax transition, one per ad.
 - More than 3 overlays on one beat — looks cluttered.
 - `xPercent`/`yPercent` while `position` is top/middle/bottom — custom coordinates only when `position:"custom"`.
-- Skipping `dr/fx-grain-overlay` — add to hook + CTA beats for premium texture.
-- `hf/instagram-follow` for under 10K followers — weak numbers destroy trust.
-- `hf/instagram-follow` on a product-page CTA ad — confuses the call to action.
+- Using any block not returned by `dr_blocks_list` — hidden blocks are not agent-safe.
 - Leaving placeholder text in content props (handle, displayName, offer, quote) — fill real data always. Style defaults are fine as-is.
 
 ---
@@ -83,6 +81,10 @@ Blocks are served dynamically by `dr_blocks_list`. Always call it before Step 5 
 - `defaultProps` — shows all settable fields with example values
 - `transitionEngine: "shader"` vs `"css"` vs `null` — `null` = overlay block (not transition), `"shader"` = WebGL transition (more dramatic), `"css"` = lighter CSS transition
 - `transitionFamily` — groups transitions by visual feel (dissolve, push, scale, distortion, light, etc.)
+- `tags` — semantic hints for matching moments like social-proof, price, mechanism, CTA.
+- `previewUrl` — optional preview media.
+
+Only use block IDs returned by `dr_blocks_list`. If an example below names a block that is absent, pick the closest returned block by `category`, `tags`, and `drUseCase`.
 
 ---
 
@@ -116,34 +118,27 @@ Each block has a visual behavior. Know what it looks like before choosing it.
 |---|---|---|---|---|
 | hook | `dr/hook-bigtext-pop` | `headline`, `kicker` | Large headline punches onto screen with a quick scale pop. Kicker appears above in smaller weight. Full-frame text dominance. | Main text interrupt |
 | hook (question) | `dr/hook-question-zoom` | `question`, `eyebrow` | Question text zooms in from slightly small, settles. Eyebrow above in subdued color. Conversational frame. | For question-style hooks |
-| problem | `hf/macos-notification` | `appName`, `title`, `body` | Realistic macOS notification card (rounded rect, app icon, title + body) slides in from top-right corner. Viewer reads it like a real alert. | Use as pattern interrupt |
 | agitate | `dr/agitation-word-highlight` | `word` (pain word), `caption` | Single pain word with a yellow marker bar sweeping left-to-right (scaleX 0→1). Caption text below. Feels like a teacher underlining the most important word on a whiteboard. | Highlight the pain word |
-| social proof | `hf/instagram-follow` | `handle`, `followers`, `displayName`, `avatarUrl` | Instagram follow card: circular avatar left, display name + follower count right, blue "Follow" button. Slides up from bottom. Looks like native Instagram UI. | Only if 10K+ followers AND goal is social proof (not product-page CTA) |
-| social proof | `hf/tiktok-follow` | `handle`, `followers`, `displayName` | TikTok-style follow prompt: username + follower count, red Follow button. Same native-app feel as the instagram block. | Only if 10K+ followers AND goal is social follow |
-| proof | `dr/social-proof-reviews` | `quote`, `name`, `stars` | White card with 5 filled stars, verbatim quote in bold, name below in lighter weight. Clean review format — no clutter. | Real verbatim quote |
-| proof | `hf/yt-lower-third` | `channelName`, `subscribers` | YouTube-style lower-third: channel logo area + name + subscriber count in a horizontal bar. Recognizable as a YouTube-credibility signal. | If YouTube-style proof |
-| proof | `hf/x-post` | `displayName`, `handle`, `body`, `timestamp`, `replyCount`, `repostCount`, `likeCount`, `viewCount`, `avatarUrl` | Native X/Twitter-style post card with engagement metrics and like pop. | Public creator/customer proof |
-| proof | `hf/reddit-post` | `subreddit`, `author`, `title`, `body`, `upvotes`, `comments` | Reddit-style community post card with upvote pop. | Community validation and objection proof |
-| value/data | `hf/apple-money-count` | `label`, `startAmount`, `endAmount`, `prefix`, `caption` | Apple-style counter from start to target amount, green flash, money burst. | Savings, revenue, bonuses, value math |
-| mechanism/value_prop | `dr/solution-product-reveal` | `title`, `bullet1`, `bullet2`, `bullet3` | Product card with a title line and 3 bullet points appearing in stagger. Each bullet animates in with a short delay. Feels like a feature reveal. | 3 benefit bullets |
+| proof | `dr/instagram-comment` | `username`, `comment`, `meta` | Native comment bubble with real UGC proof or objection. | Real quote/comment only |
+| proof | `dr/tiktok-comment` | `username`, `comment`, `meta` | TikTok-style comment bubble. | Real quote/comment only |
+| value/data | `dr/receipt-breakdown` | `title`, row labels/values, total | Receipt-style value math. | Savings, bonuses, price anchoring |
+| mechanism/value_prop | `dr/animated-bullet-list` | `title`, `item1`-`item4` | Staggered benefit/mechanism bullets. | 2-4 crisp bullets |
 | cta | `dr/cta-button-pulse` | `cta`, `offer` | Rounded button with CTA text, pulsing glow ring expanding outward on loop. Offer text below in smaller size. Hard to ignore. | **Required on CTA** |
-| hook + cta | `dr/fx-grain-overlay` | (no props) | Subtle film grain noise over the full frame on every frame. Not visible as a "thing" — it makes the scene feel like footage, not a rendered ad. | Always add to hook and CTA beats |
 
 ---
 
 ## Timing Patterns
 
-All overlays use `beat-relative` timing. Appear 300–500ms after beat starts. Duration = beat duration minus 500ms.
+Prefer `word-anchor` for product names, prices, claim words, brand names, and quoted phrases. Use `beat-relative` for decorative/structural overlays after TTS exists. Appear 300–500ms after beat starts. Use `auto_fit_beat: true` when the overlay should fill the rest of the beat.
 
 ```typescript
 dr_overlay_add({
   video_id: "...",
-  block_id: "hf/instagram-follow",
+  block_id: "dr/instagram-comment",
   props: {
-    handle: "@brandname",
-    followers: "47.5K followers",
-    displayName: "Brand Name",
-    avatarUrl: "https://..." // optional, leave out if none
+    username: "@customer",
+    comment: "Real testimonial phrase here",
+    meta: "Verified buyer"
   },
   timing: {
     mode: "beat-relative",
@@ -151,6 +146,7 @@ dr_overlay_add({
     at_ms: 500,        // appear 0.5s after beat starts
     duration_ms: 3500  // show for 3.5s
   },
+  auto_fit_beat: true,
   track_index: 1
 })
 ```
@@ -160,11 +156,10 @@ dr_overlay_add({
 | Block type | at_ms | duration_ms |
 |---|---|---|
 | Hook text pop | 0 | full beat |
-| Social follow | 500 | 3500 |
-| Review quote | 300 | 4000 |
-| Product reveal | 800 | beat remaining |
+| Comment/testimonial | 500 | 3500 |
+| Receipt/value proof | 300 | 4000 |
+| Bullet mechanism | 800 | beat remaining |
 | CTA pulse | 200 | full beat |
-| Grain overlay | 0 | full beat |
 | Agitation highlight | 200 | 2000 |
 
 ---
@@ -285,41 +280,47 @@ dr_transition_add({
 }
 ```
 
-### `hf/instagram-follow`
+### `dr/instagram-comment`
 ```typescript
 {
-  handle: "@brandname",           // with @ prefix
-  followers: "47.5K followers",  // formatted string with label
-  displayName: "Brand Name",
-  avatarUrl: "https://..."        // public image URL, optional
+  username: "@customer",
+  comment: "I tried it for two weeks and finally felt the difference.",
+  meta: "Verified buyer",
+  blurIdentity: "true"
 }
 ```
 
-### `hf/tiktok-follow`
+### `dr/tiktok-comment`
 ```typescript
 {
-  handle: "@brandname",
-  followers: "47.5K",
-  displayName: "Brand Name"
+  username: "@viewer",
+  comment: "Wait, does this actually work?",
+  meta: "Reply to comment",
+  blurIdentity: "true"
 }
 ```
 
-### `dr/social-proof-reviews`
+### `dr/receipt-breakdown`
 ```typescript
 {
-  quote: "I cleared my skin in 12 days. Nothing else worked.",
-  name: "Sarah M.",
-  stars: 5  // integer 1-5
+  title: "What you get",
+  line1Label: "Bundle",
+  line1Value: "Forty nine euros",
+  line2Label: "Bonus",
+  line2Value: "Included",
+  totalLabel: "Today",
+  totalValue: "Twenty nine euros"
 }
 ```
 
-### `dr/solution-product-reveal`
+### `dr/animated-bullet-list`
 ```typescript
 {
   title: "The Barrier Reset Process",
-  bullet1: "Rebuilds natural pH shield",
-  bullet2: "Works in 7 days",
-  bullet3: "No harsh chemicals"
+  item1: "Rebuilds natural pH shield",
+  item2: "Works in seven days",
+  item3: "No harsh chemicals",
+  markerStyle: "checks"
 }
 ```
 
@@ -328,15 +329,6 @@ dr_transition_add({
 {
   cta: "Tap below to shop",
   offer: "20% off — today only"
-}
-```
-
-### `hf/macos-notification`
-```typescript
-{
-  appName: "Skin Journal",
-  title: "Another breakout",
-  body: "Day 47. Nothing's working."
 }
 ```
 
@@ -360,24 +352,19 @@ These are agent-friendly DR-native overlays. They all accept the standard stylin
 | problem/demo video | `dr/video-inset-card` | Inset video or poster image for problem clip, product detail, testimonial B-roll | `title`, `videoUrl`, `posterUrl`, `caption`, style props |
 | comment-led proof | `dr/instagram-comment` | Instagram-style comment when the VO mentions a comment, DM, creator reply, or customer objection | `username`, `comment`, `avatarUrl`, `meta`, `blurIdentity`, style props |
 | comment-led hook | `dr/tiktok-comment` | TikTok reply/comment bubble for native UGC hooks and objection handling | `username`, `comment`, `avatarUrl`, `meta`, `blurIdentity`, style props |
-| fast proof | `dr/proof-ticker` | Kinetic ticker/scoreboard for 3-4 short proof claims | `label`, `proof1`-`proof4`, style props |
 | value math | `dr/receipt-breakdown` | Receipt/invoice breakdown for price, savings, bonuses, time saved | `title`, line labels/values, `totalLabel`, `totalValue`, style props |
 | local proof | `dr/map-pin-proof` | Map pin + local/community count when location matters | `location`, `proof`, `subline`, style props |
 | problem intent | `dr/search-query-overlay` | Animated search query for buyer-intent hooks and common questions | `query`, `result1`, `result2`, `sourceLabel`, style props |
 | testimonial DM | `dr/dm-screenshot` | Native message screenshot for private proof or creator replies | `sender`, `message1`, `message2`, `reply`, `avatarUrl`, `blurIdentity`, style props |
 | real urgency | `dr/scarcity-countdown` | Clean typographic countdown for true deadlines | `label`, `time`, style props |
 | reaction / pattern interrupt | `dr/punctuation-pop` | Huge `?`, `!`, or `?!` in the middle of the 9:16 frame | `symbol`, `caption`, style props |
-| native public proof | `hf/x-post` | Public social post proof with X-style engagement | `displayName`, `handle`, `body`, `timestamp`, `replyCount`, `repostCount`, `likeCount`, `viewCount`, `avatarUrl`, style props |
-| community proof | `hf/reddit-post` | Reddit-style thread proof or objection handling | `subreddit`, `author`, `title`, `body`, `upvotes`, `comments`, style props |
-| finance/value result | `hf/apple-money-count` | Count up a concrete savings/revenue/value number | `label`, `startAmount`, `endAmount`, `prefix`, `caption`, style props |
 
 Placement recipes:
-- Review in the middle: `dr/social-proof-reviews` with `position:"middle"`, `widthPercent:"78"`, `headlineSizePx:"44"`, `backgroundColor:"rgba(255,248,242,.94)"`.
+- Comment proof in the middle: `dr/instagram-comment` with `position:"middle"`, `widthPercent:"78"`, `headlineSizePx:"44"`, `backgroundColor:"rgba(255,248,242,.94)"`.
 - Premium glass review: `position:"middle"`, `backgroundColor:"rgba(12,14,18,.72)"`, `textColor:"#fffaf0"`, `mutedTextColor:"rgba(255,250,240,.72)"`, `borderColor:"rgba(255,255,255,.22)"`, `borderRadiusPx:"36"`.
 - Big question: `dr/punctuation-pop` with `position:"middle"`, `headlineSizePx:"220"`, `widthPercent:"58"`, `animation:"pop"`.
 - Benefit stack: `dr/animated-bullet-list` with `position:"middle"`, `markerStyle:"numbers"`, `animation:"stagger"`, `widthPercent:"84"`.
 - Demo inset: `dr/video-inset-card` with `position:"middle"`, `widthPercent:"78"`, `borderRadiusPx:"36"`, `animation:"pop"`.
-- Proof ticker: `dr/proof-ticker` with `proof1:"1,200+ customers"`, `proof2:"4.8 stars"`, `proof3:"Ships in 24h"`.
 - Receipt value stack: `dr/receipt-breakdown` with concrete line items; never fake savings.
 - Search hook: `dr/search-query-overlay` with the exact question the buyer would type.
 - Scarcity timer: `dr/scarcity-countdown` only when the deadline is real; pair separately with `dr/cta-button-pulse` for the CTA.
@@ -397,7 +384,7 @@ Use these as future-ready patterns when choosing or requesting overlays. They fe
 - Curvy path / journey line: animated route draws from step one to two to three, then lands on goal. Best for transformation and mechanism beats.
 - Native comment overlays: Instagram/TikTok comment bubble for comment-led hooks, objections, and proof. Blur avatar/name when identity should be anonymous.
 - Spec dial / product orbit: product reveal with orbit rings and three specs, not another bullet card. Best for mechanism/value prop.
-- Kinetic proof ticker: use `dr/proof-ticker` for short proof claims cycling like scoreboard chips. Good for high-energy proof beats.
+- Kinetic proof ticker: use only if `dr_blocks_list` returns a ticker block; otherwise use comment proof or receipt proof.
 - Receipt / invoice breakdown: use `dr/receipt-breakdown` for price, time saved, or cost comparison. Good for finance, SaaS, coaching.
 - Map pin / local proof: use `dr/map-pin-proof` for location or audience proof. Good for local services and event ads.
 - Search query overlay: use `dr/search-query-overlay` when the user types the problem into a native search bar. Good for problem-aware hooks.
@@ -407,12 +394,11 @@ Use these as future-ready patterns when choosing or requesting overlays. They fe
 
 Selection rules:
 - If VO says “someone commented”, use `dr/instagram-comment` or `dr/tiktok-comment`, not a generic review card.
-- If VO cites a public tweet/X post, use `hf/x-post`.
-- If VO cites a forum thread, niche community, or "people on Reddit", use `hf/reddit-post`.
-- If VO makes a big savings/revenue/value claim, use `hf/apple-money-count` or `dr/receipt-breakdown`; use `apple-money-count` for one big number and `receipt-breakdown` for line items.
+- If VO cites public social/community proof, use a returned comment/proof block; do not invent native public-post blocks.
+- If VO makes a savings/revenue/value claim, use `dr/receipt-breakdown`.
 - If VO explains a process, use `dr/step-path-goal`, not bullets.
 - If VO lists benefits, use `dr/animated-bullet-list`.
-- If VO reveals the mechanism, use `dr/solution-product-reveal`.
+- If VO reveals the mechanism, use `dr/step-path-goal` or `dr/animated-bullet-list`.
 - If VO shows footage or a screenshot, use `dr/video-inset-card` with `posterUrl` or `videoUrl`.
 - If VO says "people near you", "in Berlin", "local", or "nearby", use `dr/map-pin-proof`.
 - If VO says "costs", "saves", "included", "bonus", or "today only", use `dr/receipt-breakdown`.
@@ -424,10 +410,10 @@ Selection rules:
 VSL overlays should support argument flow, not decorate randomly:
 
 - **Open loop:** `dr/search-query-overlay`, `dr/punctuation-pop`, or `dr/hook-question-zoom` for the first unresolved question.
-- **Pain proof:** `dr/dm-screenshot`, `dr/instagram-comment`, `dr/tiktok-comment`, `hf/reddit-post`, `hf/x-post`, or `dr/problem-split-compare` when showing evidence the problem is real.
-- **Mechanism:** `dr/step-path-goal` for process, `dr/solution-product-reveal` for product mechanism, `dr/animated-bullet-list` only for compact benefits.
-- **Proof escalation:** `dr/proof-ticker` for multiple proof points, `dr/social-proof-reviews` for one verbatim testimonial, `hf/x-post`/`hf/reddit-post` for native public proof.
-- **Value justification:** `dr/receipt-breakdown` before the offer to explain price/value, or `hf/apple-money-count` for one big financial result.
+- **Pain proof:** `dr/dm-screenshot`, `dr/instagram-comment`, or `dr/tiktok-comment` when returned by `dr_blocks_list` and evidence is real.
+- **Mechanism:** `dr/step-path-goal` for process, `dr/animated-bullet-list` for compact benefits.
+- **Proof escalation:** `dr/instagram-comment` or `dr/tiktok-comment` for one verbatim testimonial, `dr/receipt-breakdown` for value proof.
+- **Value justification:** `dr/receipt-breakdown` before the offer to explain price/value.
 - **Close:** `dr/scarcity-countdown` as a clean timer plus `dr/cta-button-pulse` when urgency is real; otherwise only use CTA.
 
 VSL anti-patterns:

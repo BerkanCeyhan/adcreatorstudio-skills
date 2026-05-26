@@ -15,8 +15,10 @@ After a video is created, the user can request changes directly in the agent cha
 2. Identify the target by ID
 3. Patch with `dr_*_update` or remove with `dr_*_remove`
 4. If VO text changed: call `dr_beat_tts` to regenerate audio
-5. Give user the updated editor URL to confirm visually
-6. Render only after explicit confirmation
+5. After any `dr_beat_tts` re-run, call `dr_video_recalculate_timings`
+6. Run `dr_video_lint` and fix errors
+7. Give user the updated editor URL to confirm visually
+8. Render only after explicit confirmation
 
 ---
 
@@ -37,11 +39,11 @@ dr_overlay_update({
 })
 ```
 
-### "Remove the Instagram follow overlay"
+### "Remove a social proof/comment overlay"
 
 ```typescript
 dr_overlay_list({ video_id })
-// Find overlay with block_id "hf/instagram-follow"
+// Find overlay by block_id from dr_blocks_list, e.g. "dr/instagram-comment"
 
 dr_overlay_remove({ video_id, overlay_id: "<id>" })
 ```
@@ -79,6 +81,10 @@ dr_beat_update({
 
 // 2. Regenerate TTS (mandatory after vo_text change)
 dr_beat_tts({ video_id, beat_id: "<proof beat id>" })
+
+// 3. Trim overlays to the new real duration, then lint
+dr_video_recalculate_timings({ video_id })
+dr_video_lint({ video_id })
 ```
 
 ### "Use a different voice for the whole ad"
@@ -95,6 +101,10 @@ dr_video_update({ video_id, voice_id: "<new voice id>" })
 for (const beat_id of beat_ids) {
   dr_beat_tts({ video_id, beat_id })
 }
+
+// 4. Trim overlays to the new real durations, then lint
+dr_video_recalculate_timings({ video_id })
+dr_video_lint({ video_id })
 ```
 
 ### "Move the hook beat to second position"

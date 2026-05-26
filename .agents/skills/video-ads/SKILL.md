@@ -5,6 +5,7 @@ description: >
   Trigger: "use adcreator", "make a video ad", "create a video ad about", or any request to produce a short-form video ad.
   Covers the full workflow: questionnaire → script → TTS → B-Roll → overlays → transitions → editor link → render.
   Also handles iterative editing in chat (update overlays, swap transitions, change voice, reorder beats).
+  Not for editing existing rendered MP4 files, exporting captions only, single-image static ads, or custom HTML-based video; use HyperFrames for custom HTML compositions.
   Requires AdCreator Studio MCP connection (adcreatorstudio.com).
 ---
 
@@ -129,7 +130,7 @@ For a complete worked example with beat assignment and audio tags, see [examples
 ### Ad Goal
 
 - **Product page CTA** (to shop/landing page): No social-follow blocks. CTA is "link below / tap here / swipe up."
-- **Social follow CTA**: Use `hf/instagram-follow` or `hf/tiktok-follow`. CTA is "follow for more."
+- **Social follow CTA**: Use only social-follow blocks returned by `dr_blocks_list`. CTA is "follow for more."
 - When unsure: ask the user. A discount + shop URL = always product-page CTA.
 
 ---
@@ -162,6 +163,11 @@ dr_beat_tts({ video_id: "...", beat_id: "..." })
 // Returns: audioUrl, durationMs — total should sum to 15–45s
 ```
 
+<HARD-GATE>
+Before any `dr_overlay_add` or `dr_transition_add`, every beat MUST have TTS (`audio_url` set on the beat).
+Run `dr_beat_tts` for each beat ID first. If TTS fails (model bug, quota, voice error), STOP and tell the user. Do NOT add overlays against estimated beat durations; they will drift.
+</HARD-GATE>
+
 ---
 
 ## Step 4 — B-Roll
@@ -181,6 +187,8 @@ For extra cutaways inside a beat (close-ups, proof inserts, jump-cuts), use `dr_
 ## Step 5 — Overlay Blocks
 
 Read [references/blocks.md](references/blocks.md) before adding overlays. For timing details, read [references/timing.md](references/timing.md).
+
+Call `dr_blocks_list` first. Only use block IDs returned by `dr_blocks_list`. Server filters hidden blocks. Do not invent or recall block IDs from prior conversations; registry can change.
 
 **Block defaults are applied automatically** — pass only props you want to override:
 
@@ -213,14 +221,14 @@ dr_overlay_add({
 | Moment | Block | Condition |
 |---|---|---|
 | Hook | `dr/hook-bigtext-pop` | Always |
-| Mechanism / value | `dr/solution-product-reveal` | Product has clear bullet benefits |
+| Mechanism / value | `dr/animated-bullet-list` | Product has clear bullet benefits |
 | CTA | `dr/cta-button-pulse` | Always on CTA beat |
-| Grain / premium texture | `dr/fx-grain-overlay` | Premium/lifestyle tone |
-| Social proof (follow) | `hf/instagram-follow` | Social-follow goal AND 10K+ followers **only** |
-| Social proof (quote) | `dr/social-proof-reviews` | Real verbatim quote only |
-| Public social proof | `hf/x-post` or `hf/reddit-post` | Real post text/metrics |
-| Money / savings | `hf/apple-money-count` | Real value math only |
+| Word punch | `dr/punctuation-pop` or `dr/agitation-word-highlight` | Product name, price, claim word; use word-anchor |
+| Social proof (comment/quote) | `dr/instagram-comment` or `dr/tiktok-comment` | Real comment or testimonial only |
+| Money / savings | `dr/receipt-breakdown` | Real value math only |
 | Scarcity | `dr/scarcity-countdown` | Real urgency only |
+
+If a block in this table is not returned by `dr_blocks_list`, do not use it.
 
 Max 3 overlays per beat. Most beats: 0–1.
 
@@ -256,7 +264,17 @@ For full transition catalog: [references/blocks.md](references/blocks.md).
 
 ---
 
-## Step 7 — Editor Link
+## Step 7 — Lint
+
+```typescript
+dr_video_lint({ video_id: "..." })
+```
+
+Resolve all errors before review or render: missing TTS, hidden block, overlay overrun, invalid word_index. Warnings are judgment calls; surface them to user if they affect quality.
+
+---
+
+## Step 8 — Editor Link
 
 After video + TTS + overlays + transitions, give the user the link. **Do NOT auto-render.**
 
@@ -268,7 +286,7 @@ Ready to render? Confirm and I'll start it.
 
 ---
 
-## Step 8 — Render (confirmed only)
+## Step 9 — Render (confirmed only)
 
 ```typescript
 dr_video_render({ video_id: "..." })
@@ -277,7 +295,7 @@ dr_video_render({ video_id: "..." })
 
 ---
 
-## Step 9 — Editing in Chat
+## Step 10 — Editing in Chat
 
 After creation, users can request changes without opening the web editor. Always call `dr_video_get` or `dr_overlay_list` first to get current IDs.
 
@@ -309,6 +327,8 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - Mechanism/proof beats require own B-Roll — never stock
 - `dr_beat_tts` must run for every beat
 - TTS calls are sequential — never parallel
+- Only use block IDs returned by `dr_blocks_list`
+- Run `dr_video_lint` before render and fix every error
 - Block style defaults are fine as-is; only fill required content props with real data
 - Always get IDs from `dr_video_get` or `dr_overlay_list` before update/remove calls
 
@@ -317,7 +337,7 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 ## You Do This Wrong
 
 - Writing English for a German-market product (domain .de or German IG = German script)
-- Adding `hf/instagram-follow` for product-page CTA ads or under 10K followers
+- Adding social-follow overlays for product-page CTA ads or weak follower counts
 - Adjacent high-energy transitions: flash + whip-pan in sequence = chaos
 - Period-stacked fragments "X. Y. Z." — connect with commas
 - Em-dashes in VO (TTS restarts at the dash)

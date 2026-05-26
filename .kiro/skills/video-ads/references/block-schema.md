@@ -17,10 +17,12 @@ Documents what `dr_blocks_list` returns and what `dr_overlay_add` expects, so yo
 
 ```typescript
 {
-  id: string                    // e.g. "dr/hook-bigtext-pop", "hf/instagram-follow"
+  id: string                    // e.g. "dr/hook-bigtext-pop", "dr/instagram-comment"
   label: string                 // Human name: "Hook: Big Text Pop"
   category: string              // See categories below
   description: string           // What the block does and when to use it
+  tags: string[]                // Semantic tags for matching: ["social-proof", "review", "stars"]
+  previewUrl: string | null     // Optional short preview gif/mp4
   defaultDurationMs: number     // Suggested duration in ms (use as duration_ms)
   defaultProps: object          // All props with default values — override only what you need
   propFields: { name, defaultValue }[]  // Which props are configurable
