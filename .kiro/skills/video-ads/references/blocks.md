@@ -1,21 +1,32 @@
 # Blocks Reference
 
+## Contents
+- You Do This Wrong
+- Overlay Design System (props, presets, position, typography)
+- Extensibility (dr_blocks_list)
+- Sound Design Contract
+- Edit / Remove Tools
+
+---
+
 ## You Do This Wrong
 
-- You add `dr/cta-button-pulse` to hook or proof beats. It belongs only on the CTA beat.
-- You use `hf/cinematic-zoom` twice. It's the climax transition. Use it once, at the biggest emotional pivot (usually agitate → mechanism).
-- You pile 5 blocks on one beat. Max 3 overlays per beat or it looks cluttered.
-- You leave required overlay props empty or with placeholder text. Fill real content; only leave optional fields empty when the block hides empty elements cleanly.
-- You set `xPercent`/`yPercent` while `position` is top/middle/bottom. Exact coordinates only matter when `position:"custom"`.
-- You skip `dr/fx-grain-overlay` and wonder why the ad looks flat. Add it to hook and CTA beats.
-- You add `hf/instagram-follow` for brands with under 10K followers. Weak follower count destroys trust instead of building it. Only use if the number is impressive.
-- You add `hf/instagram-follow` on product-page CTA ads. If the viewer is going to a shop link, showing "follow us" confuses the call to action.
+- `dr/cta-button-pulse` on hook or proof beats — CTA beat only.
+- `hf/cinematic-zoom` more than once — climax transition, one per ad.
+- More than 3 overlays on one beat — looks cluttered.
+- `xPercent`/`yPercent` while `position` is top/middle/bottom — custom coordinates only when `position:"custom"`.
+- Skipping `dr/fx-grain-overlay` — add to hook + CTA beats for premium texture.
+- `hf/instagram-follow` for under 10K followers — weak numbers destroy trust.
+- `hf/instagram-follow` on a product-page CTA ad — confuses the call to action.
+- Leaving placeholder text in content props (handle, displayName, offer, quote) — fill real data always. Style defaults are fine as-is.
 
-
+---
 
 ## Overlay Design System
 
-Use `dr_blocks_list` as source of truth. The tool returns `propFields`; fill every field with real data. For DR-native overlays, these style props are the standard interface:
+**Block defaults are applied automatically** by `dr_overlay_add`. Pass only props you want to override. See [block-schema.md](block-schema.md) for the full prop surface.
+
+For DR-native overlays, these style props are the standard interface:
 
 | Field | Good values | Rule |
 |---|---|---|
@@ -424,3 +435,20 @@ VSL anti-patterns:
 - Do not use countdowns without real deadlines.
 - Do not turn the whole ad into cards. Use overlays as beats in an argument.
 - Every overlay must answer: hook, intensify pain, reveal mechanism, prove, reduce risk, or close.
+
+
+---
+
+## Editing Overlays After Creation
+
+Use these tools to update or remove overlays without reopening the web editor. Always call `dr_overlay_list` first to get IDs:
+
+```typescript
+dr_overlay_list({ video_id })                           // get overlay IDs
+dr_overlay_update({ video_id, overlay_id, props: { headline: "New text" } })
+dr_overlay_remove({ video_id, overlay_id })
+dr_transition_update({ video_id, transition_id, block_id: "hf/crossfade" })
+dr_transition_remove({ video_id, transition_id })
+```
+
+For full editing workflow examples, see [iterating.md](iterating.md).
