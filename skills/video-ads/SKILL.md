@@ -32,8 +32,18 @@ Before calling ANY dr_ tool, collect all REQUIRED fields. Do NOT call dr_video_c
 **OPTIONAL but improves quality:**
 8. `brand_colors` — primary hex, accent hex
 9. `product_image_url` — hero product shot (public URL)
-10. `own_broll_available` — does user have B-Roll? If yes, get URLs
+10. `own_broll_available` — does user have B-Roll? If yes, get URLs (or run `dr_assets_list` to discover what's already uploaded)
 11. `instagram_handle` + `instagram_followers` — for social proof overlays
+
+### Pre-script asset discovery
+
+Before drafting the script, call `dr_assets_list({ video_id })` once (the create call comes later, so omit `video_id` if you don't have one yet — it'll return all user assets). This is intelligence, not a tool call to wait on:
+
+- If smart clips exist for what the user described (e.g., the product they named), mention them in your script confirmation: "I see you have 12 smart clips from your product demo — I'll use them on mechanism + proof."
+- If nothing usable exists for mechanism/proof beats, surface that gap **now** so the user can upload while you're scripting: send `dr_assets_upload_link` with a specific slot_label.
+- If a parent video has `smart_clip_in_progress: true`, mention "your last upload is still being analyzed — I'll pick up the clips when they're ready."
+
+This pre-flight catches asset gaps before they slow Step 4.
 
 If the user provides a description implying most fields, infer and proceed. Ask only for missing REQUIRED fields, in a single message.
 </HARD-GATE>
@@ -162,7 +172,7 @@ Call `dr_beat_tts` for each beat **sequentially** (not parallel — rate limits)
 
 ```typescript
 dr_beat_tts({ video_id: "...", beat_id: "..." })
-// Returns: audioUrl, durationMs — total should sum to 15–45s
+// Returns: audioUrl, durationMs — total follows approved script length
 ```
 
 <HARD-GATE>
@@ -176,26 +186,66 @@ Run `dr_beat_tts` for each beat ID first. If TTS fails (model bug, quota, voice 
 
 Read [references/broll.md](references/broll.md) and [references/assets.md](references/assets.md) for strategy and priority.
 
-**Asset gap detection:** Before calling `dr_broll_suggest`, check `dr_assets_list` for user-uploaded footage. For mechanism and proof beats, if no matching product asset exists, offer the user a direct upload link:
+### 4a. Inventory the library (do this BEFORE per-beat suggestion)
 
 ```typescript
-dr_assets_list({ video_id })  // check what's available
-
-// If no product closeup for mechanism beat:
-// "I'd love a closeup of [product] for the mechanism beat. Upload it here, or I'll use Pexels stock."
-// dr_assets_upload_link({ project_id, slot_label: "Product closeup", hint: "Mechanism beat — product detail shot" })
+dr_assets_list({ video_id })
 ```
 
-Priority: user's own library → curated library → Pexels/Unsplash. Never stock for mechanism/proof beats if product assets exist.
+Look at the response and answer three questions:
+
+1. **Is smart-clipping in progress?** If any row has `smart_clip_in_progress: true`, the better clips are about to land. Either wait 30s and re-call, or move on to overlay work and come back.
+2. **Are there pending smart clips?** Rows with `source: "auto-clip"` and `approved: null` are usable but un-reviewed. Note the parent ids — you'll send a Clip Studio review link at the end.
+3. **Are there obvious gaps?** Per beat, can you find a high-`clip_score` smart clip whose `ad_use_cases` matches the beat type and whose flags match the beat purpose (mechanism → `hand_visible`, proof → `face_visible`, etc.)? If not, hold open a "needs upload" note.
+
+If gaps exist on mechanism/proof/cta, send an upload link **before** calling `dr_broll_suggest`:
+
+```typescript
+dr_assets_upload_link({
+  project_id: "<video_id>",
+  slot_label: "Product closeup",
+  hint: "Mechanism beat — product detail shot showing the key feature"
+})
+```
+
+Tell the user: "I need X for the mechanism beat. Upload here: [url]. Or say 'use stock' and I'll proceed with Pexels." Give them the choice; don't block waiting indefinitely. If they upload during the session, re-run `dr_assets_list` until the new asset appears (and its `smart_clip_in_progress` flips to `false`).
+
+### 4b. Per-beat: pick the asset
+
+For each beat, prefer smart clips filtered to the beat type:
+
+```typescript
+dr_assets_list({ video_id, kind: "smart_clips", beat_type: "mechanism" })
+// Top clip_score wins. approved=true beats approved=null.
+```
+
+If nothing matches, fall back to `dr_broll_suggest`:
 
 ```typescript
 dr_broll_suggest({ beat_type: "mechanism", vo_text: "...", locale: "de-DE" })
 // locale: always pass the VO language locale to get locale-correct Pexels results
+// Returns own_clip / own_upload (your library) before unsplash / pexels — trust the order.
+```
 
+Assign:
+
+```typescript
 dr_beat_broll_assign({ video_id, beat_id, media_url, thumb_url, media_type: "video" })
 ```
 
 For extra cutaways inside a beat (close-ups, proof inserts, jump-cuts), use `dr_media_clip_add`. These sit above base B-Roll, below captions/overlays. See [references/broll.md](references/broll.md) for `fill_policy` and animation rules.
+
+### 4c. Hand-off note
+
+After all beats have B-Roll, if any assignment used an unreviewed smart clip (`approved: null`), send a review link for each parent video involved:
+
+```typescript
+dr_assets_review_link({ asset_id: "<parent_video_id>" })
+// Returns standalone /clip-studio?asset=...&token=... URL the user can open
+// to approve / reject / trim / regenerate without re-logging in.
+```
+
+Wrap the message: "I used 4 of your smart clips on this video. Review them here: [url] — you can approve, reject, trim, or regenerate at a different target length. Approved clips will rank highest in future ads automatically."
 
 ---
 
@@ -346,6 +396,9 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - `dr/cta-button-pulse` always on CTA beat
 - Name the mechanism, never the product, in the mechanism beat
 - Mechanism/proof beats: prefer user's own B-Roll or library — stock only as fallback
+- Smart clips (source=auto-clip) always beat raw uploads, which beat stock — trust the dr_assets_list / dr_broll_suggest ranking
+- If any assigned smart clip is `approved: null`, end the session message with a `dr_assets_review_link` URL for the user to confirm
+- Never attach a parent video as base B-Roll while its `smart_clip_in_progress: true` — wait for the smart clips
 - `dr_beat_tts` must run for every beat before adding overlays
 - TTS calls are sequential — never parallel
 - Only use block IDs returned by `dr_blocks_list` — never invent IDs from memory
