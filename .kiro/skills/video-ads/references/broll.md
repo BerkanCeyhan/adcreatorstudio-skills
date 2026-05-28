@@ -12,12 +12,17 @@
 ## Priority Order
 
 ```
-1. Own B-Roll (library) — always preferred for product/proof/mechanism
-2. Unsplash — editorial stills, lifestyle context, emotion beats
-3. Pexels — motion clips, lifestyle video, context beats
+1. Smart clips (source: "auto-clip") with approved=true and matching ad_use_cases
+2. Smart clips with high clip_score (>0.7) and matching ad_use_cases
+3. Smart clips (other) + raw uploads/Drive imports
+4. Curated library
+5. Unsplash — editorial stills, lifestyle context, emotion beats
+6. Pexels — motion clips, lifestyle video, context beats
 ```
 
-For beats where the product isn't relevant (agitate, why_others_fail, objection), stock is fine.
+For beats where the product isn't relevant (agitate, why_others_fail, objection), stock is fine — but a context smart clip from a wider/scene shot is still preferred when available.
+
+**Smart clips first.** When `dr_assets_list({ kind: "smart_clips", beat_type: "<beat>" })` returns rows, those should be exhausted before stock. Skim by `clip_score` desc — anything ≥ 0.7 is production-grade. See [assets.md](assets.md) for the smart-clip pipeline and the approval verdict (`approved: true | false | null`).
 
 ---
 
@@ -100,9 +105,27 @@ Returns:
 }
 ```
 
-- `source: "media_library"` = user's own uploads (highest priority — always pick first)
-- Results ranked: media_library → library → unsplash/pexels
+- `source: "own_clip"` = a user's smart clip (highest priority — pick first when present)
+- `source: "own_upload"` = raw user upload or Drive import
+- `source: "media_library" | "library"` = legacy / curated library
+- Results ranked: own_clip → own_upload → library → unsplash/pexels
+- Each row carries a `reason` string explaining why it ranked there (e.g. "Matches mechanism beat, detail shot, hands visible, 6s") and `clip_score` when applicable
 - Pexels returns up to 20 results re-ranked by locale-correct query — trust top result unless thumbnail clearly off
+
+### Using clip_score and ad_use_cases
+
+When you fetch with `dr_assets_list({ kind: "smart_clips", beat_type: "mechanism" })`, results are pre-filtered to clips whose `ad_use_cases` array includes the beat. From there:
+
+- Sort by `clip_score` desc
+- Approve verdict: `true` > `null` > (no `false` ever surfaces — already filtered)
+- For mechanism/proof: bias toward `product_visible: true` AND (`hand_visible` for mechanism / `face_visible` for proof)
+- For hook: bias toward `shot_type: "closeup"` or any clip with `face_visible: true`
+
+If you assigned an unreviewed clip (`approved: null`), end the message with a Clip Studio link so the user can confirm:
+
+```
+dr_assets_review_link({ asset_id: "<parent_video_id>" })
+```
 
 ## Base B-Roll vs Extra Cutaways
 

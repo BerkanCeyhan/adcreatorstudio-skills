@@ -1,69 +1,164 @@
 # Asset Library
 
-## Checking Available Assets
+## Three Kinds of Assets
 
-Before calling `dr_broll_suggest`, check what the user has uploaded:
+A user's library now contains three distinct kinds of media, all returned by `dr_assets_list`:
 
-```typescript
-dr_assets_list({ video_id })
-// Returns user's uploaded media with tags, description, file_type, url
-```
+| `source` field | What it is | Use it for |
+|---|---|---|
+| `upload` | Raw user upload (image or full-length video) | Hero shots, single-take footage |
+| `google_drive` | Imported from the user's Drive | Same as `upload` |
+| `auto-clip` | A short ~6s **smart clip** auto-cut from a parent video by the pipeline | First choice for any beat — pre-scored, pre-tagged, beat-routable |
 
-Assets are auto-tagged by GPT-4o-mini vision at upload time:
-- `objects` — what's in the frame
-- `shot_type` — closeup / medium / wide / detail / product
-- `product_visible` — boolean
-- `usable_as_broll` — boolean
-- `short_description` — German + English
-
-Trust these tags when matching assets to beats. Filter by `usable_as_broll: true` for B-Roll candidates.
+Auto-clips are always children of a parent video (`parent_asset_id` is set). They carry their own `vision_tags`, `clip_score`, and rich `metadata.clip_metadata` (objects, shot_type, ad_use_cases, transcript_text, …).
 
 ---
 
-## Asset Gap Detection (S7)
+## Smart Clip Pipeline (what happens on upload)
 
-For key beats, check if a matching product asset exists. If not, offer the user a direct upload link before falling back to stock.
+1. User uploads a video → `/api/workers/asset-vision-tag` dispatcher
+2. Render worker downloads source → runs PySceneDetect (fallback: ffmpeg scene filter) → candidate windows
+3. Per candidate: cuts mp4, builds a 5-keyframe contact sheet, runs GPT-4o-mini vision scoring, computes `clip_score`, generates an embedding, inserts an `auto-clip` row
+4. Worker reports back → parent's `metadata.smart_clip_done = true`, `smart_clip_count = N`
+5. Whisper transcribes audio when present so each clip carries a `transcript_text` aligned to its window
 
-| Beat | What to look for | When to ask |
-|---|---|---|
-| `mechanism` | `shot_type: "product"` or `"detail"`, `product_visible: true` | Always — stock never works for mechanism |
-| `proof` | `shot_type: "product"` with customer context, or screenshot-type | When no proof asset found |
-| `cta` | `shot_type: "product"` hero shot | Preferred — stock acceptable as fallback |
-| `hook` | `shot_type: "closeup"` or dramatic product | Optional — bold stock is fine |
+Hard caps: 12 candidates for videos ≤2 min, 20 for ≤5 min, hard cap 30.
 
-### Requesting an Upload
+While step 4 hasn't fired, the parent has `smart_clip_in_progress: true` in `dr_assets_list` output. **Do not** attach a parent video as base B-Roll while smart-clipping is in progress — the better clips are about to land.
+
+---
+
+## Checking Available Assets
+
+Always check the library before suggesting stock. **Run this twice during a session**: once before scripting (to know what footage exists), and once before B-Roll selection per beat.
 
 ```typescript
-// When no matching product asset found for mechanism beat:
+dr_assets_list({ video_id })
+// Returns assets with: source, clip_score, ad_use_cases, shot_type, product_visible,
+// person_visible, hand_visible, face_visible, transcript, approved verdict,
+// and smart_clip_in_progress / smart_clip_done / smart_clip_count for parent videos.
+```
+
+**Filter for the beat you're solving:**
+
+```typescript
+// Get the best smart clips for a mechanism beat in one call
+dr_assets_list({ video_id, kind: "smart_clips", beat_type: "mechanism" })
+```
+
+Trust these tags. Rank within the response by `clip_score` desc.
+
+---
+
+## Approval State (Human-in-the-Loop)
+
+Each auto-clip carries an `approved` verdict:
+
+| Value | Meaning | What you should do |
+|---|---|---|
+| `true` | User reviewed and approved | Prefer first — explicit human-validated pick |
+| `null` | Pending — not yet reviewed | Usable; mention "I picked an unreviewed smart clip — open the Clip Studio to confirm" |
+| `false` | Rejected | Filtered out automatically; agent never sees these |
+
+If you assigned a pending clip to a beat, send the user a review link:
+
+```typescript
+dr_assets_review_link({ asset_id: "<parent_video_id>" })
+// Returns a signed standalone URL: /clip-studio?asset=...&token=...
+// User can approve, reject, trim handles, or regenerate at a different target length.
+```
+
+Use the **parent's** id (not the clip's). The review link opens that parent's full clip set.
+
+---
+
+## Asset Gap Detection — Right Order
+
+The correct order during a session:
+
+1. **Pre-script discovery (Step 0/1 of SKILL.md)** — `dr_assets_list({ video_id })`. Inventory what the user already has. Mention it in your script confirmation message ("I'll use your 3 product closeups for mechanism + proof"). This shapes the script too — if proof footage exists, you can write a stronger proof beat.
+2. **Pre-B-Roll selection (Step 4)** — re-check the library. The user may have uploaded between scripting and B-Roll. Detect gaps per beat:
+
+| Beat | What to look for | When to ask the user to upload |
+|---|---|---|
+| `mechanism` | `shot_type: "detail"` or `"product"` AND `product_visible: true`, ideally with `hand_visible` | Always — stock never works for mechanism |
+| `proof` | `shot_type: "product"` with customer/use context, or testimonial screenshot | When no proof asset found |
+| `cta` | `shot_type: "product"` hero shot | Preferred — stock acceptable as fallback |
+| `hook` | `shot_type: "closeup"` or dramatic product / face | Optional — bold stock is fine |
+
+3. **If a gap exists** — offer an upload link instead of silently falling back to stock:
+
+```typescript
 dr_assets_upload_link({
   project_id: "<video_id>",
   slot_label: "Product closeup",
   hint: "Mechanism beat — product detail shot showing the key feature"
 })
-// Returns a signed upload URL the user can open to drop files
 ```
 
-**User message template:**
-> "For the mechanism beat, I'd love a closeup of [product] showing [key feature]. Your library doesn't have one yet — upload it here: [url]. Otherwise I'll use Pexels lifestyle stock."
+Tell the user clearly: "I need X for the mechanism beat. Upload here: [url]. Or say 'use stock' and I'll proceed with Pexels."
 
-Always give the user the choice (upload vs. proceed with stock). Don't block the workflow waiting indefinitely.
-
----
-
-## Why Product-Scoped Assets Win
-
-User assets are searched first in `dr_broll_suggest`. Assets with matching tags score higher than stock. A well-tagged product closeup will always outrank a generic Pexels lifestyle shot — because the tags match the VO nouns extracted by the LLM.
-
-If the user uploads footage during the agent run, call `dr_assets_list` again after the upload webhook fires to get the new asset URLs.
+When the upload finishes, smart-clipping fires automatically. The user can also wait, then call `dr_assets_review_link` to approve / reject / trim — and you should offer that link if the parent's `smart_clip_count` is ≥ 4 so the user has meaningful curation to do.
 
 ---
 
-## Auto-Tagging Pipeline
+## Why Smart Clips Beat Everything Else
 
-At upload, the server runs:
-1. `ffprobe` → duration, dimensions
-2. Sample 2–4 frames
-3. GPT-4o-mini vision → structured tags + short description
-4. Tags written to `assets.tags` and `assets.description`
+`dr_broll_suggest` ranks results with:
 
-This means user uploads are searchable immediately after upload. No manual tagging needed.
+```
+own clips with approved=true → own clips with high clip_score + matching ad_use_cases
+  → own clips (other) → curated library → Pexels/Unsplash
+```
+
+A well-scored smart clip with `ad_use_cases: ["mechanism"]` and `product_visible: true` will outrank a generic Pexels lifestyle shot by a wide margin. Always trust the ranking.
+
+If the top results don't fit the beat (you can read the `reason` field), broaden:
+- Try other `kind: "smart_clips"` from a different parent video
+- Then `kind: "uploads"` (full-length user videos can still work for context beats)
+- Only then accept stock
+
+---
+
+## When to Re-Check
+
+Re-run `dr_assets_list` if:
+- The user said they'd upload something — wait ~30s, re-check, look for new rows
+- A parent video's previous response had `smart_clip_in_progress: true` — re-check to pick up the new auto-clips
+- The user asked you to "use the latest footage" — never trust stale results
+
+---
+
+## Quick Field Reference (`dr_assets_list` rows)
+
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "source": "upload | google_drive | auto-clip",
+  "file_type": "video/mp4 | image/jpeg | …",
+  "url": "string",
+  "thumb_url": "string",
+  "contact_sheet_url": "string | null",
+  "duration_ms": 6200,
+  "parent_asset_id": "uuid | null",
+  "clip_start_ms": 4200,
+  "clip_end_ms": 10200,
+  "clip_score": 0.86,
+  "approved": true,
+  "shot_type": "detail | closeup | medium | wide | product",
+  "ad_use_cases": ["mechanism", "proof"],
+  "product_visible": true,
+  "person_visible": true,
+  "hand_visible": true,
+  "face_visible": false,
+  "description": "Hand holding the product, soft daylight, kitchen counter",
+  "transcript": "…spoken words inside this window…",
+  "has_smart_clips": false,
+  "smart_clip_in_progress": false,
+  "smart_clip_done": null,
+  "smart_clip_count": null
+}
+```
+
+For parent videos (rows where `has_smart_clips: true`), prefer the child auto-clips for assignment unless you need the full-length source.

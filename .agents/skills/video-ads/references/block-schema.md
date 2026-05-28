@@ -1,6 +1,6 @@
 # Block Schema Reference
 
-Documents what `dr_blocks_list` returns and what `dr_overlay_add` expects, so you can confidently set props without guessing.
+Documents what `dr_blocks_list`, `dr_block_get`, and `dr_overlay_add` expect, so you can confidently pick blocks and set props without guessing.
 
 ## Contents
 - Block object shape
@@ -11,7 +11,7 @@ Documents what `dr_blocks_list` returns and what `dr_overlay_add` expects, so yo
 
 ---
 
-## Block Object Shape
+## Slim Block Object Shape
 
 `dr_blocks_list` returns an array of block objects:
 
@@ -24,11 +24,22 @@ Documents what `dr_blocks_list` returns and what `dr_overlay_add` expects, so yo
   tags: string[]                // Semantic tags for matching: ["social-proof", "review", "stars"]
   previewUrl: string | null     // Optional short preview gif/mp4
   defaultDurationMs: number     // Suggested duration in ms (use as duration_ms)
-  defaultProps: object          // All props with default values — override only what you need
-  propFields: { name, defaultValue }[]  // Which props are configurable
+  recommendedFor: string[]      // Beat purposes this block fits
+  moodTags: string[]            // Warm, premium, energetic, editorial, etc.
+  intensityLevel: string | null // calm | medium | high
   source: "dr" | "hyperframes"  // "dr" = inline template, "hf" = HyperFrames iframe
   transitionEngine?: "shader" | "css"   // Only on transition blocks
   transitionFamily?: string     // Groups related transitions: dissolve, push, distortion, etc.
+}
+```
+
+Call `dr_block_get(block_id)` for the full schema:
+
+```typescript
+{
+  defaultProps: object
+  propFields: { name, type, control, options, min, max, step, defaultValue }[]
+  styleVariants: object
 }
 ```
 
@@ -65,7 +76,7 @@ All `dr/*` blocks share these standard style props. Pass only the ones you want 
 | `outroAnimation` | `"none"` | Whole-overlay exit: `fade`, `fall`, `slide-left`, `slide-right`, `shrink`, `none` |
 | `internalAnimation` | `"none"` | Motion inside overlay: `stagger`, `pop`, `none` |
 
-`hf/*` (HyperFrames) blocks have their own prop schemas — check `propFields` from `dr_blocks_list`.
+`hf/*` (HyperFrames) blocks have their own prop schemas — check `propFields` from `dr_block_get`.
 
 ---
 
@@ -124,7 +135,7 @@ props: {
 
 ## Concrete Example: dr/hook-bigtext-pop
 
-From `dr_blocks_list` for `dr/hook-bigtext-pop`:
+From `dr_block_get("dr/hook-bigtext-pop")`:
 
 ```json
 {

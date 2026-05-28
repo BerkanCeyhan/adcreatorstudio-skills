@@ -76,9 +76,10 @@ Reject these before calling tools:
 
 ## Extensibility
 
-Blocks are served dynamically by `dr_blocks_list`. Always call it before Step 5 — do NOT rely on memory of what blocks exist. New blocks appear with `drUseCase` and `defaultProps` in the response. Use those fields as the primary signal for how to use a new block:
+Blocks are served dynamically by `dr_blocks_list`. Always call it before Step 5 — do NOT rely on memory of what blocks exist. New blocks appear with `drUseCase`, `recommendedFor`, `moodTags`, and `intensityLevel` in the slim response. Use those fields as the primary signal for candidate selection, then call `dr_block_get(block_id)` for defaults and fields:
 - `drUseCase` — tells you which beat type and goal it serves
-- `defaultProps` — shows all settable fields with example values
+- `dr_block_get(block_id).defaultProps` — shows all settable fields with example values
+- `dr_block_get(block_id).propFields` — exact controls, options, ranges, and defaults
 - `transitionEngine: "shader"` vs `"css"` vs `null` — `null` = overlay block (not transition), `"shader"` = WebGL transition (more dramatic), `"css"` = lighter CSS transition
 - `transitionFamily` — groups transitions by visual feel (dissolve, push, scale, distortion, light, etc.)
 - `tags` — semantic hints for matching moments like social-proof, price, mechanism, CTA.
@@ -168,7 +169,7 @@ dr_overlay_add({
 
 Call `dr_blocks_list` to see all available transitions (category = "transition"). The list is dynamic — always call it fresh, don't rely on memory.
 
-**Max 2–3 transitions per video.** Use fewer on short videos (15–25s). Pick ONE primary (used 2x) + one accent (used 1x at the biggest moment).
+Transitions belong on emotional pivots, not every beat boundary. Pick ONE primary family for consistency + one accent at the biggest moment.
 
 ### What each transition communicates
 
@@ -374,7 +375,7 @@ Design guardrails:
 - Do not put a review card and CTA in the same screen region.
 - Do not shrink text below readable phone size to fit long copy. Shorten copy instead.
 - Do not use `custom` placement as a default; first try top/middle/bottom.
-- Use `dr_blocks_list` `propFields` every time. It returns exact controls, options, ranges, and defaults.
+- Use `dr_block_get(block_id).propFields` every time. It returns exact controls, options, ranges, and defaults.
 
 
 ### Motion Graphics Overlay Ideas
