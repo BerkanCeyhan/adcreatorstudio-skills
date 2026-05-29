@@ -37,6 +37,7 @@ dr_assets_list({ video_id })
 // Returns assets with: source, clip_score, ad_use_cases, shot_type, product_visible,
 // person_visible, hand_visible, face_visible, transcript, approved verdict,
 // and smart_clip_in_progress / smart_clip_done / smart_clip_count for parent videos.
+// With video_id: each row also gets used_in_video + used_in_beats (already placed in the cut).
 ```
 
 **Filter for the beat you're solving:**
@@ -152,8 +153,12 @@ Re-run `dr_assets_list` if:
   "person_visible": true,
   "hand_visible": true,
   "face_visible": false,
-  "description": "Hand holding the product, soft daylight, kitchen counter",
+  "description": "AI vision summary of the clip",
+  "user_description": "what the user typed in Clip Studio (authoritative when present)",
+  "tags": ["serum", "dropper", "detail"],
   "transcript": "…spoken words inside this window…",
+  "used_in_video": false,
+  "used_in_beats": ["Mechanism", "Proof"],
   "has_smart_clips": false,
   "smart_clip_in_progress": false,
   "smart_clip_done": null,
@@ -161,4 +166,7 @@ Re-run `dr_assets_list` if:
 }
 ```
 
-For parent videos (rows where `has_smart_clips: true`), prefer the child auto-clips for assignment unless you need the full-length source.
+Field notes:
+- `user_description` + `tags` are human-edited (Clip Studio / Assets tab). When `user_description` is set, trust it over the AI `description`; the user is telling you when to use this clip.
+- `used_in_video` / `used_in_beats` only appear when you pass `video_id`. `used_in_video: true` means the asset is already placed in the cut (on the listed beats, or as a `cutaway`). Don't re-assign the same clip to the same beat; pick a different one for variety.
+- For parent videos (`has_smart_clips: true`), prefer the child auto-clips for assignment unless you need the full-length source.
