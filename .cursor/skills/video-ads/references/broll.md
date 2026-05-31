@@ -129,10 +129,18 @@ dr_assets_review_link({ asset_id: "<parent_video_id>" })
 
 ## Base B-Roll vs Extra Cutaways
 
-Use two different media tools:
+Use two different media tools — and **always pass `media_id` when the media is the user's own asset** so it links to the video and shows in the editor's Assets tab (stock has no id, omit it):
 
 1. `dr_beat_broll_assign` — sets the main background media for a beat. One per beat.
-2. `dr_media_clip_add` — adds extra muted cutaways inside the beat (close-ups, proof inserts, jump-cuts). Short: 900–1800ms each.
+2. `dr_media_clip_add` — layers muted cutaways on top of the base inside the beat (close-ups, proof inserts, reactions, before/after, jump-cuts).
+
+### Cutaways: place them where the script earns them
+
+Cutaways are how you add proof and texture at the exact moment a word lands — not on a timer.
+
+- **No fixed cadence.** Don't drop a cutaway every N seconds. Anchor each to a specific word/claim (a feature being named → product closeup; a number → receipt/chart insert; a doubt → reaction).
+- **Blend user + stock.** A cutaway can be the user's own clip (pass `media_id`) OR stock from `dr_broll_suggest`. Prefer the user's own footage for mechanism/proof **bases**; stock cutaways are welcome to add energy and variety.
+- **Don't repeat a clip.** Check `used_in_video` / `used_in_beats` from `dr_assets_list` before reusing.
 
 ### Animation Rules (non-negotiable)
 
@@ -175,7 +183,8 @@ dr_beat_broll_assign({
   beat_id: "<beat id>",
   media_url: "https://...",
   thumb_url: "https://...",
-  media_type: "video"
+  media_type: "video",
+  media_id: "<asset id>"   // pass when it's the user's own footage; omit for stock
 })
 
 dr_media_clip_add({
@@ -183,6 +192,7 @@ dr_media_clip_add({
   media_url: "https://...",
   thumb_url: "https://...",
   media_type: "image",
+  media_id: "<asset id>",  // pass when it's the user's own footage; omit for stock
   timing: { mode: "beat-relative", beat_id: "<beat id>", at_ms: 1400, duration_ms: 1200 },
   track_index: 1,
   fit: "cover",

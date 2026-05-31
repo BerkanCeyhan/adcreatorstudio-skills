@@ -24,7 +24,14 @@ Auto-clips are always children of a parent video (`parent_asset_id` is set). The
 
 Hard caps: 12 candidates for videos ≤2 min, 20 for ≤5 min, hard cap 30.
 
-While step 4 hasn't fired, the parent has `smart_clip_in_progress: true` in `dr_assets_list` output. **Do not** attach a parent video as base B-Roll while smart-clipping is in progress — the better clips are about to land.
+While step 4 hasn't fired, the parent has `smart_clip_in_progress: true` in `dr_assets_list` output. **Do not** attach a parent video as base B-Roll while smart-clipping is in progress — the better clips are about to land. Poll `dr_assets_pending({ video_id, since_ts })` to know when they're ready:
+
+```typescript
+dr_assets_pending({ video_id, since_ts })
+// → { processing, parents_in_progress, ready: [new clips/images], done }
+// Call ~every 20-30s after sharing an upload link. When done && ready has items,
+// call dr_assets_list({ video_id }) and continue. Tell the user it's processing.
+```
 
 ---
 
@@ -39,6 +46,16 @@ dr_assets_list({ video_id })
 // and smart_clip_in_progress / smart_clip_done / smart_clip_count for parent videos.
 // With video_id: each row also gets used_in_video + used_in_beats (already placed in the cut).
 ```
+
+**Scope.** With a `video_id`, results default to `scope: "video"` — ONLY the assets linked to this video (the exact pool the editor's Assets tab shows): footage dropped via the video's upload link, clips you assigned, and their auto-clips. Pass `scope: "all"` to browse the whole library and add more from it. Anything you assign with a `media_id` (and anything dropped via the per-video link) is auto-linked, so it appears here on the next call.
+
+**Read before you assign.** Always read a clip's `description` / `user_description` / `transcript` / `ad_use_cases` / `shot_type` and pick from what it actually shows. If a clip you want is thin (no usable description, no tags), enrich it first — the same write Clip Studio performs:
+
+```typescript
+dr_asset_update({ asset_id, description: "Close-up: dropper releasing serum onto fingertip", tags: ["serum","dropper","closeup","application"] })
+```
+
+Never assign a clip you can't describe. Enriching improves `dr_broll_suggest` ranking and reuse in future ads.
 
 **Filter for the beat you're solving:**
 
@@ -99,7 +116,7 @@ dr_assets_upload_link({
 
 Tell the user clearly: "I need X for the mechanism beat. Upload here: [url]. Or say 'use stock' and I'll proceed with Pexels."
 
-When the upload finishes, smart-clipping fires automatically. The user can also wait, then call `dr_assets_review_link` to approve / reject / trim — and you should offer that link if the parent's `smart_clip_count` is ≥ 4 so the user has meaningful curation to do.
+This link is **unique to this video** — anything the user drops (many clips/images at once) is auto-linked to it, and long videos are smart-clipped automatically. After sharing it, poll `dr_assets_pending({ video_id, since_ts })` until `done`, then `dr_assets_list({ video_id })` picks up the new clips. The user can also call `dr_assets_review_link` to approve / reject / trim — offer that link when the parent's `smart_clip_count` is ≥ 4 so there's meaningful curation to do.
 
 ---
 
@@ -124,8 +141,8 @@ If the top results don't fit the beat (you can read the `reason` field), broaden
 ## When to Re-Check
 
 Re-run `dr_assets_list` if:
-- The user said they'd upload something — wait ~30s, re-check, look for new rows
-- A parent video's previous response had `smart_clip_in_progress: true` — re-check to pick up the new auto-clips
+- The user said they'd upload something — poll `dr_assets_pending` until `done`, then re-list
+- A parent video's previous response had `smart_clip_in_progress: true` — poll `dr_assets_pending`, then re-list to pick up the new auto-clips
 - The user asked you to "use the latest footage" — never trust stale results
 
 ---
