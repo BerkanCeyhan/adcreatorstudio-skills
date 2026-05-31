@@ -11,7 +11,18 @@ description: >
 
 # Video Ads — MCP Workflow
 
-DR Videos are 9:16 short-form video ads built from **beats** (script sections), each with voiceover, B-Roll, and optional overlay blocks. Common length: 15–90s depending on script complexity.
+DR Videos are 9:16 short-form video ads built from **beats** (script sections), each with voiceover, B-Roll, and optional overlay blocks.
+
+**Length = the script.** A video is exactly as long as the script you write or the user provides — the sum of beat audio + tails. There is no target duration to hit and no template length. Never pad or trim copy to reach a number of seconds. Templates seed a starting *beat structure* only.
+
+### Gates (when to stop and confirm)
+
+- **Brief** — always. Collect required fields before any `dr_` tool (see HARD-GATE below).
+- **Script** — always. Show the full monologue and get approval before `dr_video_create`.
+- **Plan** — only when footage exists OR the ad is complex (beats ≥ 6). Show the per-beat Plan table (Step 4) and get a nod before placing media + overlays. For a simple stock-only ad, skip this gate and proceed.
+- **Render** — always. Never auto-render; confirm first (Step 9).
+
+Outside these, keep moving — don't block the user with needless check-ins.
 
 ---
 
@@ -40,8 +51,8 @@ Before calling ANY dr_ tool, collect all REQUIRED fields. Do NOT call dr_video_c
 Before drafting the script, call `dr_assets_list({ video_id })` once (the create call comes later, so omit `video_id` if you don't have one yet — it'll return all user assets). This is intelligence, not a tool call to wait on:
 
 - If smart clips exist for what the user described (e.g., the product they named), mention them in your script confirmation: "I see you have 12 smart clips from your product demo — I'll use them on mechanism + proof."
-- If nothing usable exists for mechanism/proof beats, surface that gap **now** so the user can upload while you're scripting: send `dr_assets_upload_link` with a specific slot_label.
-- If a parent video has `smart_clip_in_progress: true`, mention "your last upload is still being analyzed — I'll pick up the clips when they're ready."
+- If nothing usable exists for mechanism/proof beats, surface that gap **now** so the user can upload while you're scripting: send `dr_assets_upload_link` with a specific slot_label. The link is unique to this video — anything the user drops there (many clips/images at once) is auto-linked to it and long videos are smart-clipped.
+- If a parent video has `smart_clip_in_progress: true`, mention "your last upload is still being analyzed" and poll `dr_assets_pending({ video_id, since_ts })` to know when the clips land.
 
 This pre-flight catches asset gaps before they slow Step 4.
 
@@ -192,9 +203,17 @@ Read [references/broll.md](references/broll.md) and [references/assets.md](refer
 dr_assets_list({ video_id })
 ```
 
+With a `video_id`, this returns the **video-scoped pool** (`scope: "video"` by default): only assets linked to this video — footage dropped for it, clips you assigned, and their auto-clips. Pass `scope: "all"` to browse the whole library and add from it.
+
+**Read metadata, always.** Before choosing any clip, read its `description` / `user_description` / `transcript` / `ad_use_cases` / `shot_type`. Pick from what the clip actually shows, never from the filename. If a clip you want is thin (no usable description or tags), enrich it first so ranking + reuse improve:
+
+```typescript
+dr_asset_update({ asset_id, description: "Hand squeezing serum onto fingertip, close-up", tags: ["serum","closeup","hand","application"] })
+```
+
 Look at the response and answer three questions:
 
-1. **Is smart-clipping in progress?** If any row has `smart_clip_in_progress: true`, the better clips are about to land. Either wait 30s and re-call, or move on to overlay work and come back.
+1. **Is smart-clipping in progress?** If any row has `smart_clip_in_progress: true`, better clips are about to land. Poll `dr_assets_pending({ video_id, since_ts })` (~every 20–30s, tell the user it's processing) until `done`, or move on to overlay work and come back.
 2. **Are there pending smart clips?** Rows with `source: "auto-clip"` and `approved: null` are usable but un-reviewed. Note the parent ids — you'll send a Clip Studio review link at the end.
 3. **Are there obvious gaps?** Per beat, can you find a high-`clip_score` smart clip whose `ad_use_cases` matches the beat type and whose flags match the beat purpose (mechanism → `hand_visible`, proof → `face_visible`, etc.)? If not, hold open a "needs upload" note.
 
@@ -208,7 +227,7 @@ dr_assets_upload_link({
 })
 ```
 
-Tell the user: "I need X for the mechanism beat. Upload here: [url]. Or say 'use stock' and I'll proceed with Pexels." Give them the choice; don't block waiting indefinitely. If they upload during the session, re-run `dr_assets_list` until the new asset appears (and its `smart_clip_in_progress` flips to `false`).
+Tell the user: "I need X for the mechanism beat. Upload here: [url]. Or say 'use stock' and I'll proceed with Pexels." Give them the choice; don't block waiting indefinitely. If they upload during the session, poll `dr_assets_pending({ video_id, since_ts })` (~20–30s) until `done`, then `dr_assets_list({ video_id })` picks up the new clips automatically (they're already linked to this video). If the user declines, blend stock and say so.
 
 ### 4b. Per-beat: pick the asset
 
@@ -227,13 +246,31 @@ dr_broll_suggest({ beat_type: "mechanism", vo_text: "...", locale: "de-DE" })
 // Returns own_clip / own_upload (your library) before unsplash / pexels — trust the order.
 ```
 
-Assign:
+Assign — **pass `media_id` whenever the media is the user's own asset/clip** so it links to this video and shows in the editor's Assets tab (stock has no id, just omit it):
 
 ```typescript
-dr_beat_broll_assign({ video_id, beat_id, media_url, thumb_url, media_type: "video" })
+dr_beat_broll_assign({ video_id, beat_id, media_url, thumb_url, media_type: "video", media_id: "<asset id from dr_assets_list>" })
 ```
 
-For extra cutaways inside a beat (close-ups, proof inserts, jump-cuts), use `dr_media_clip_add`. These sit above base B-Roll, below captions/overlays. See [references/broll.md](references/broll.md) for `fill_policy` and animation rules.
+### 4b-plan. Per-beat Plan (gate when footage exists or beats ≥ 6)
+
+Before placing media + overlays on a footage-rich or complex ad, lay out a Plan table and confirm with the user:
+
+| Beat | Base clip (one-line why) | Cutaways | Overlay (≤1 primary, or "none") | Transition out |
+|---|---|---|---|---|
+| hook | own_clip #3 — face to camera, strong eye contact | — | hook-bigtext-pop | flash-through-white |
+| mechanism | own_clip #7 — hand showing the feature | stock detail insert @ "twist" | animated-bullet-list | crossfade |
+| proof | own_clip #2 — testimonial face | receipt insert on the number | instagram-comment | blur-through |
+
+For a simple stock-only ad, skip this gate.
+
+### 4c-cutaways. Layer cutaways where the script earns them
+
+Beyond each beat's base B-Roll, proactively layer **cutaways** with `dr_media_clip_add` (track ≥ 1, sits above base, below captions/overlays) at the exact moments that strengthen the beat: a product closeup as a feature is named, a proof insert (receipt/chart/screenshot) on a claim, a reaction, a before/after, a hook jump-cut.
+
+- **Blend user + stock.** Cutaways can be the user's own clips (pass `media_id`) OR stock from `dr_broll_suggest`. Prefer the user's own footage for mechanism/proof *bases*; stock cutaways are welcome to add texture and energy.
+- **No fixed cadence.** Do not place cutaways on a timer. Place them where a specific word/claim makes them land. Use `used_in_video` / `used_in_beats` from `dr_assets_list` to avoid repeating a clip.
+- See [references/broll.md](references/broll.md) for `fill_policy` and animation rules (short sources must `loop`/`freeze_last`; images always get a motion `animation`).
 
 ### 4c. Hand-off note
 
@@ -262,9 +299,13 @@ Read [references/blocks.md](references/blocks.md) before adding overlays. For ti
 dr_blocks_list({ for_beat_type: "proof" })
 // → slim list with id, label, recommendedFor, moodTags, intensityLevel
 
-// Step 2: for each candidate you want to use — fetch full schema
+// Step 2: for each candidate you want to use — fetch full schema + the block's real HTML
 dr_block_get("dr/instagram-comment")
-// → defaultProps, propFields, styleVariants
+// → defaultProps, propFields, styleVariants, html (composition source), propDomMap
+// Read the html + propDomMap to see exactly what each prop drives (CSS var for style
+// props, vars.<prop> content binding in the <script>). Customize with intent — headline,
+// accent, sizes, position, animation — don't just accept defaults. usedInHtml=false means
+// this block ignores that prop.
 
 // Step 3: compose overlay with palette from Visual Director Contract
 dr_overlay_add({
@@ -300,6 +341,10 @@ dr_overlay_add({
   track_index: 2
 })
 ```
+
+### Less Is More
+
+One primary overlay idea per beat — at most. Sometimes the strongest choice is **no overlay**: let strong footage + burned-in captions carry the beat. An overlay should add one piece of information the viewer can read in two seconds, not decorate. Word-anchor content-bound overlays (product name, price, a specific claim) so they land on the spoken word.
 
 ### Overlay Variety
 
@@ -408,6 +453,20 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - Always get IDs from `dr_video_get` or `dr_overlay_list` before update/remove calls
 - For images in `dr_media_clip_add`: always set `animation` explicitly (use `ken_burns`, `zoom_in`, `pan_left`, or `zoom_out` — never leave as `none`)
 - For short video clips: set `fill_policy` to `loop` or `freeze_last` to prevent dead frames
+- Length = the script. Never pad/trim copy to hit a duration; templates seed beat structure only, never length
+- Pass `media_id` on `dr_beat_broll_assign` / `dr_media_clip_add` whenever the media is the user's own asset, so it links to the video
+- Read a clip's metadata before assigning it; if thin, enrich with `dr_asset_update` first — never assign a clip you can't describe
+- Layer cutaways where the script earns them (proof inserts, detail shots), blending user + stock — no fixed cadence
+- One primary overlay per beat at most; sometimes none is the right answer
+
+---
+
+## Fallbacks
+
+- **Weak / no proof** — don't fake testimonials. Lead with the mechanism, use specific factual claims, soften CTA. Skip social-proof blocks.
+- **No footage and user won't upload** — blend stock (`dr_broll_suggest`) and say so plainly. Prefer the most concrete, on-topic clips; keep cuts tight.
+- **Clip still processing** — poll `dr_assets_pending`; if it stalls, proceed with what's ready or stock, and tell the user you'll swap when their clips land.
+- **TTS drift / timing uncertain** — word-anchor content-bound overlays instead of guessing ms; never add overlays before TTS exists on the beat.
 
 ---
 
@@ -430,7 +489,7 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - **[references/beats.md](references/beats.md)** — Beat types, niche examples. Read before scripting.
 - **[references/copywriting.md](references/copywriting.md)** — DR formulas, hooks, mechanism naming, proof formats. Read "You Write This Wrong" section before starting.
 - **[references/blocks.md](references/blocks.md)** — Block catalog, overlay props, style presets, transition catalog. Read before Steps 5–6.
-- **[references/overlays.md](references/overlays.md)** — Routing tables: block suggestions by beat purpose + transition energy table. Read before Step 5.
+- **[references/overlays.md](references/overlays.md)** — Per-overlay guide (what each block is, when it shines, key props, position), palette→styleVariant map, routing by beat purpose, transition energy table, less-is-more rule. Read before Step 5.
 - **[references/timing.md](references/timing.md)** — Beat-relative, word-anchor, absolute timing with examples. Read when setting overlay timing.
 - **[references/script-input.md](references/script-input.md)** — How to parse a user-provided script into beats. Read when user already has a script.
 - **[references/iterating.md](references/iterating.md)** — Edit loop: update/remove overlays, transitions, beats, voice after creation. Read when user requests changes.
