@@ -124,6 +124,17 @@ Use real names, real locations, real results. Quotes that sound made-up ("This c
 
 **Never use:** "results may vary" (kills trust), "some customers report" (hedged), "could help with" (uncertain)
 
+### Weak / no proof — fallback
+
+If the user has no real testimonials, numbers, or press — **do not invent them.** Faked proof is the fastest way to kill an ad. Instead:
+
+- **Lead with the mechanism.** Make the *reason it works* the spine of the ad — a believable, specific "why" carries belief when there's no social proof to lean on.
+- **Use concrete factual claims** you can stand behind (ingredient, process, guarantee, what it does) instead of testimonial-shaped fluff.
+- **Skip social-proof blocks** (`dr/instagram-comment`, `hf/reddit-post`, follow badges, etc.) rather than fill them with generic copy.
+- **Soften the CTA** toward low-risk action (try it, see for yourself, money-back) instead of "join 12,000 customers."
+
+Surface the gap to the user once: "You don't have proof assets yet — I'll lead with the mechanism. If you have a testimonial or numbers, send them and I'll strengthen the proof beat."
+
 ---
 
 ## Objection Patterns
