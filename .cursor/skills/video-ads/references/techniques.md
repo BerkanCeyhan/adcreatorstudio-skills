@@ -22,7 +22,8 @@ Rules: one caption style per video (hold it constant). Burned-in captions add 15
 
 ## Overlay motion
 
-- **Block animation enums** — every overlay block exposes `animation` / `introAnimation` / `outroAnimation` / `internalAnimation`. Vary them across beats so overlays don't all enter the same way. (A per-block `easing` vocabulary — snappy→`power4.out`, dreamy→`sine.inOut`, bouncy→`back.out`, dramatic→`expo.out` — is on the roadmap; until then choose intro/outro variants for feel.)
+- **Block animation enums** — every overlay block exposes `animation` / `introAnimation` / `outroAnimation` / `internalAnimation`. Vary them across beats so overlays don't all enter the same way.
+- **`easing`** prop (per overlay) sets the *feel* of the intro/outro motion: `smooth` (natural), `snappy` (quick/decisive), `bouncy` (overshoot), `springy` (oscillate), `dramatic` (fast then glide), `dreamy` (slow, symmetrical). Match it to the ad tone — snappy for hype, dreamy for wellness, smooth as the safe default.
 - **One idea per beat.** An overlay delivers one readable fact in two seconds. Sometimes the strongest beat has no overlay — let footage + captions carry it.
 - **Word-anchor** product name / price / claim so the overlay punches on the spoken word (`timing.mode: "word-anchor"`, indices from `caption_words`).
 
