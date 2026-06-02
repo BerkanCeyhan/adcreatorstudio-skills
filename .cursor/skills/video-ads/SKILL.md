@@ -170,7 +170,7 @@ dr_video_create({
   template: "ugc_style",
   beats: [ /* approved beats with audio tags */ ],
   voice_id: "...",
-  caption_style: "pop"  // pop (default) | classic | highlight
+  caption_style: "pop"  // tone-matched — see references/techniques.md (pop | classic | highlight | karaoke | kinetic-slam | gradient | neon | glitch | editorial)
 })
 // Returns: videoId, editorUrl, beats[] with IDs — store all for next steps
 ```
@@ -513,6 +513,7 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - **[references/iterating.md](references/iterating.md)** — Edit loop: update/remove overlays, transitions, beats, voice after creation. Read when user requests changes.
 - **[references/broll.md](references/broll.md)** — B-Roll strategy, fill_policy, animation rules, locale search. Read before Step 4.
 - **[references/assets.md](references/assets.md)** — Asset library: how to check user uploads, request missing assets, understand auto-tags. Read before Step 4.
+- **[references/techniques.md](references/techniques.md)** — Craft levers: caption-style→tone map, overlay motion, cutaway timing, transitions, sound design, per-beat technique picks. Read before Steps 4–6.
 - **[references/voice.md](references/voice.md)** — Voice selection, audio tags, TTS settings. Read before Step 2.
 - **[palettes/beauty-wellness.md](palettes/beauty-wellness.md)** — Pastel, clean, skin tones.
 - **[palettes/fitness-energy.md](palettes/fitness-energy.md)** — Bold, high-contrast, red/black.
