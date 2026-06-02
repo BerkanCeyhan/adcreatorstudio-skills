@@ -406,6 +406,24 @@ Resolve all errors before review or render: missing TTS, hidden block, overlay o
 
 ---
 
+## Step 7b — Review pass (look at it)
+
+Don't ship blind. Capture still frames and actually read them:
+
+```typescript
+dr_video_snapshot({ video_id })   // one frame per beat midpoint → JPEG URLs
+```
+
+Open each frame and judge it like a viewer:
+- Is the overlay readable in two seconds? Not overlapping captions or the safe zones?
+- Do captions land on the right words, not crowding the lower third?
+- Is the footage on-brand and the right shot for the beat?
+- Does the palette hold across beats?
+
+Fix the **weakest beat** (swap a clip, retime/word-anchor an overlay, change caption emphasis, drop a redundant overlay), then `dr_video_snapshot` again or move on. This is what turns a correct ad into a good one — the agent that reviews its own frames produces far better ads than one that doesn't.
+
+---
+
 ## Step 8 — Editor Link
 
 After video + TTS + overlays + transitions, give the user the link. **Do NOT auto-render.**
