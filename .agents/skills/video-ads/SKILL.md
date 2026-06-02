@@ -338,6 +338,12 @@ dr_overlay_add({
 })
 ```
 
+### Authoring a custom overlay (escape hatch)
+
+When no registry block fits and the beat genuinely earns something bespoke, author one in raw HyperFrames HTML with `dr_overlay_custom_html`. Submit a self-contained sub-composition: a root with `data-composition-id`, scoped `<style>`, and a `<script>` that builds a **paused** GSAP timeline registered on `window.__timelines["<your-id>"]`. It is validated + sandboxed; on any violation it's rejected with reasons (fix + resubmit).
+
+Contract: 1080×1920 (or omit dims); paused GSAP timeline under your exact composition id; no `fetch`/XHR/WebSocket/`setInterval`/`requestAnimationFrame`/`Math.random`; no `<audio>`, `<video>` muted; external URLs only from `cdn.adcreatorstudio.com` / Google Fonts / the GSAP CDN (else inline). Read `--dr-accent` / `--dr-text` / `--dr-surface` for the palette. Prefer a registry block first; author only with purpose, one idea per beat. After authoring, `dr_video_snapshot` to confirm it renders.
+
 ### Visual Director Contract — Color Rule (non-negotiable)
 
 Every `dr_overlay_add` call **MUST** pass `accentColor`, `backgroundColor`, and `textColor` from the active Visual Director Contract palette. Server defaults are fine structurally but won't match the brand palette. Override them every time.
