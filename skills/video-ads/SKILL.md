@@ -414,11 +414,14 @@ Resolve all errors before review or render: missing TTS, hidden block, overlay o
 
 ## Step 7b — Review pass (look at it)
 
-Don't ship blind. Capture still frames and actually read them:
+Don't ship blind. Run the static audit, then look at real frames:
 
 ```typescript
+dr_video_inspect({ video_id })    // fast structured checks: safe zones, too-brief overlays, over-stacking
 dr_video_snapshot({ video_id })   // one frame per beat midpoint → JPEG URLs
 ```
+
+Fix anything `dr_video_inspect` flags first (it gives a `fix` per finding), then eyeball the snapshots.
 
 Open each frame and judge it like a viewer:
 - Is the overlay readable in two seconds? Not overlapping captions or the safe zones?
