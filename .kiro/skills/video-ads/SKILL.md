@@ -197,13 +197,23 @@ Run `dr_beat_tts` for each beat ID first. If TTS fails (model bug, quota, voice 
 
 Read [references/broll.md](references/broll.md) and [references/assets.md](references/assets.md) for strategy and priority.
 
+**Asset tool rule (hard):** for DR videos use `dr_assets_list` ONLY. Never use the generic `list_assets` — it is library-wide and leaks unrelated/other-project clips. `dr_assets_list({ video_id })` is the correct, video-scoped source.
+
+**Upload-first branch.** If the user signals they'll provide their own footage (intake said so, or you asked and they chose "I'll upload"), do this FIRST and do NOT pull stock yet:
+1. Share `dr_assets_upload_link({ project_id })`. Tell them what to drop.
+2. Poll `dr_assets_pending({ video_id, since_ts })` (~20–30s) until `done`. Tell them it's processing.
+3. Then `dr_assets_list({ video_id })` and build from their clips.
+Only call `dr_broll_suggest` (stock) if the user declines uploading or explicitly says "use stock." Never assume stock for beats the user didn't rule on, and never narrate "I'll assign stock to the rest" and act on it without confirmation.
+
 ### 4a. Inventory the library (do this BEFORE per-beat suggestion)
 
 ```typescript
 dr_assets_list({ video_id })
 ```
 
-With a `video_id`, this returns the **video-scoped pool** (`scope: "video"` by default): only assets linked to this video — footage dropped for it, clips you assigned, and their auto-clips. Pass `scope: "all"` to browse the whole library and add from it.
+With a `video_id`, this returns the **video-scoped pool** (`scope: "video"` by default): only assets linked to this video — footage dropped for it, clips you assigned, and their auto-clips.
+
+**Use the user's OTHER footage too.** You are NOT limited to this video's dropper uploads. To pull from their earlier uploads, generated images, or clips from other videos, call `dr_assets_list({ video_id, scope: "all" })`, pick what fits, and assign it with `media_id` — that auto-links it to this video (it then appears in `scope: "video"` and the editor).
 
 **Read metadata, always.** Before choosing any clip, read its `description` / `user_description` / `transcript` / `ad_use_cases` / `shot_type`. Pick from what the clip actually shows, never from the filename. If a clip you want is thin (no usable description or tags), enrich it first so ranking + reuse improve:
 
@@ -290,11 +300,15 @@ Wrap the message: "I used 4 of your smart clips on this video. Review them here:
 
 Read [references/blocks.md](references/blocks.md) before adding overlays. For timing details, read [references/timing.md](references/timing.md). For routing suggestions by beat purpose, read [references/overlays.md](references/overlays.md).
 
-### Two-Step Block Discovery (mandatory)
+### Block Discovery (mandatory)
 
-**Never invent block IDs. Never call `dr_blocks_list()` without `for_beat_type`.**
+**Never invent block IDs.** Discover in three steps:
 
 ```typescript
+// Step 0 (ONCE per video): survey the FULL catalog so you know every overlay available
+dr_blocks_list()
+// → all agent-visible blocks. Learn the palette before you commit to any single one.
+
 // Step 1: discover blocks ranked for this beat
 dr_blocks_list({ for_beat_type: "proof" })
 // → slim list with id, label, recommendedFor, moodTags, intensityLevel
@@ -454,6 +468,10 @@ See [references/iterating.md](references/iterating.md) for worked examples of co
 - For images in `dr_media_clip_add`: always set `animation` explicitly (use `ken_burns`, `zoom_in`, `pan_left`, or `zoom_out` — never leave as `none`)
 - For short video clips: set `fill_policy` to `loop` or `freeze_last` to prevent dead frames
 - Length = the script. Never pad/trim copy to hit a duration; templates seed beat structure only, never length
+- For DR videos use `dr_assets_list` only — never `list_assets` (library-wide, leaks other projects' clips)
+- If the user will upload footage: share the dropper, poll `dr_assets_pending` to `done`, THEN build — no stock until they decline. Never narrate-then-act on an unconfirmed "I'll use stock for the rest"
+- You can use the user's other library assets via `dr_assets_list({ scope: "all" })` + assign with `media_id` — not limited to this video's dropper uploads
+- Survey all overlay blocks once (`dr_blocks_list()` no filter) before picking per-beat
 - Pass `media_id` on `dr_beat_broll_assign` / `dr_media_clip_add` whenever the media is the user's own asset, so it links to the video
 - Read a clip's metadata before assigning it; if thin, enrich with `dr_asset_update` first — never assign a clip you can't describe
 - Layer cutaways where the script earns them (proof inserts, detail shots), blending user + stock — no fixed cadence
