@@ -4,21 +4,21 @@ AdCreatorStudio builds ads from a curated block + caption + transition set (not 
 
 ## Caption styles (the #1 motion surface for 9:16)
 
-Captions are word-timed and burned in — they carry most of the kinetic energy of a DR ad. Choose the style to match the ad's tone (set on the video; `dr_video_create` / `dr_video_update` `caption_style`):
+Captions are word-timed and burned in — they carry most of the kinetic energy of a DR ad. Choose the style to match the ad's tone (set on the video; `dr_video_create` / `dr_video_update` `caption_style`). Call **`dr_caption_styles`** for the live list (id, category, tone, `needs`).
+
+Top picks are HyperFrames-designed components driven by our ElevenLabs word timing:
 
 | Tone / niche | caption_style | Feel |
 |---|---|---|
-| UGC, social, lifestyle | `karaoke` | Pill fills with accent per word — native TikTok feel |
-| Hype, fitness, gaming, bold hook | `kinetic-slam` | Big punchy scale on each word |
-| Wellness, beauty, warm | `pop` (default) | Bouncy active word, soft |
-| Premium, finance, coaching, editorial | `editorial` | Restrained, weight-shift, accent word |
-| Tech, neon, night | `neon` | Glowing accent word |
-| Edgy, pattern-interrupt | `glitch` | RGB-split, high energy |
-| Clean overlay-light | `highlight` | Subtle accent on the active word |
-| Bold statement | `gradient` | Accent word rises |
-| Classic VSL | `classic` | Dark subtitle plate, accent word |
+| UGC, social, lifestyle | `pill-karaoke` | Pill fills word-by-word — native TikTok feel |
+| Hype, fitness, gaming, bold hook | `kinetic-slam` | Big punchy per-word slam (auto-accents brand/number words) |
+| Clean overlay-light | `highlight` | Accent pill sweeps the active word |
+| Bold statement | `gradient-fill` | Gradient sweeps across each word |
+| Tech, neon, night | `neon-glow` | Glowing accent word (auto-accents brand/number words) |
 
-Rules: one caption style per video (hold it constant). Burned-in captions add 15–25% retention — keep them on unless the user opts out. Word-anchor content-bound overlays to land on the same word the caption emphasizes.
+Legacy inline styles still selectable: `pop` (soft bouncy, default), `classic` (dark subtitle plate), `glitch` (RGB-split), `editorial` (restrained weight-shift). Prefer the components above for new ads.
+
+`needs: ['keyword']` styles auto-accent brand names, numbers and ALL-CAPS — no manual tagging. Rules: one caption style per video (hold it constant). Burned-in captions add 15–25% retention — keep them on unless the user opts out. Word-anchor content-bound overlays to land on the same word the caption emphasizes.
 
 ## Overlay motion
 

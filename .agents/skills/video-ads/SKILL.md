@@ -170,7 +170,7 @@ dr_video_create({
   template: "ugc_style",
   beats: [ /* approved beats with audio tags */ ],
   voice_id: "...",
-  caption_style: "pop"  // tone-matched — see references/techniques.md (pop | classic | highlight | karaoke | kinetic-slam | gradient | neon | glitch | editorial)
+  caption_style: "pill-karaoke"  // tone-matched — call dr_caption_styles; components: pill-karaoke | kinetic-slam | highlight | gradient-fill | neon-glow (legacy inline: pop | classic | glitch | editorial)
 })
 // Returns: videoId, editorUrl, beats[] with IDs — store all for next steps
 ```
